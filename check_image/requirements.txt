@@ -1,0 +1,1 @@
+-e git://github.com/cs50/check50.git@develop#egg=check50
