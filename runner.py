@@ -87,7 +87,7 @@ class Container:
     def __enter__(self):
         # Start check50 container
         process = subprocess.Popen(
-            ["docker", "run", "-d", "-t", "grading_server"],
+            ["docker", "run", "-d", "-t", "grading_server_check"],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
 
