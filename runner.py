@@ -103,7 +103,7 @@ class Container:
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
 
-        stopped_container_id = process.stdout.read().strip()
+        stopped_container_id = process.stdout.read().strip().decode('utf8')
         print(f"STOPPED container {stopped_container_id}")
 
         # Remove check50 container
@@ -112,7 +112,7 @@ class Container:
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
 
-        removed_container_id = process.stdout.read().strip()
+        removed_container_id = process.stdout.read().strip().decode('utf8')
         print(f"REMOVED container {removed_container_id}")
 
 
