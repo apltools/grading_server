@@ -10,6 +10,3 @@ COPY ./requirements.txt /distro
 RUN python3 -m pip install -r requirements.txt --user
 
 WORKDIR /check
-
-# Make port 80 available to the world outside this container
-# EXPOSE 80

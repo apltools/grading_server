@@ -13,6 +13,7 @@ class Status(enum.Enum):
     BUSY = enum.auto()
     FINISHED = enum.auto()
 
+
 class Manager:
     def __init__(self):
         self.task_queue = multiprocessing.Queue()
@@ -40,6 +41,40 @@ class Manager:
             self.status[id] = Status.UNKNOWN
 
         return status, result
+
+
+class Container:
+    def __enter__(self):
+        # Start check50 container
+        process = subprocess.Popen(
+            ["docker", "run", "-d", "-t", "grading_server_check"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+
+        self.id = process.stdout.read().strip().decode('utf8')
+        print(f"STARTED container {self.id}")
+
+        return self
+
+    def __exit__(self, type, value, traceback):
+        # Stop check50 container
+        process = subprocess.Popen(
+            ["docker", "container", "stop", self.id],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+
+        stopped_container_id = process.stdout.read().strip().decode('utf8')
+        print(f"STOPPED container {stopped_container_id}")
+
+        # Remove check50 container
+        process = subprocess.Popen(
+            ["docker", "container", "rm", self.id],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+
+        removed_container_id = process.stdout.read().strip().decode('utf8')
+        print(f"REMOVED container {removed_container_id}")
+
 
 def run(task_queue, result_queue):
     while True:
@@ -82,38 +117,5 @@ def run(task_queue, result_queue):
                 stderr=subprocess.STDOUT)
 
         result_queue.put((id, result))
-
-class Container:
-    def __enter__(self):
-        # Start check50 container
-        process = subprocess.Popen(
-            ["docker", "run", "-d", "-t", "grading_server_check"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-
-        self.id = process.stdout.read().strip().decode('utf8')
-        print(f"STARTED container {self.id}")
-
-        return self
-
-    def __exit__(self, type, value, traceback):
-        # Stop check50 container
-        process = subprocess.Popen(
-            ["docker", "container", "stop", self.id],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-
-        stopped_container_id = process.stdout.read().strip().decode('utf8')
-        print(f"STOPPED container {stopped_container_id}")
-
-        # Remove check50 container
-        process = subprocess.Popen(
-            ["docker", "container", "rm", self.id],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-
-        removed_container_id = process.stdout.read().strip().decode('utf8')
-        print(f"REMOVED container {removed_container_id}")
-
 
 manager = Manager()
