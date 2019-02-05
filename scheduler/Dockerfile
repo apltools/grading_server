@@ -15,7 +15,7 @@ RUN apk add docker
 
 EXPOSE 80
 
-ENV FLASK_APP=server.py
+ENV FLASK_APP=scheduler.py
 ENV FLASK_ENV=development
 
-CMD ["python", "server.py"]
+CMD ["python", "scheduler.py"]

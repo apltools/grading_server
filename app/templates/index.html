@@ -1,0 +1,14 @@
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"> </script>
+</head>
+<body>
+
+  <form id="form" method="post" enctype="multipart/form-data">
+    <input type="file" name="submission" id="submission"/>
+    <input type="text" name="slug" id="slug"/>
+    <button>Submit</button>
+  </form>
+  <br/>
+  <pre id="result"></pre>
+</body>
