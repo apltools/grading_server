@@ -6,6 +6,8 @@ WORKDIR /app
 
 COPY . /app
 
+ENV PATH=$PATH:/root/.local/bin
+
 # Install any needed packages specified in requirements.txt
 RUN python -m pip install -r requirements.txt --user
 
@@ -15,7 +17,7 @@ RUN apk add docker
 
 EXPOSE 80
 
-ENV FLASK_APP=scheduler.py
+ENV FLASK_APP=app.py
 ENV FLASK_ENV=development
 
-CMD ["python", "scheduler.py"]
+CMD ["python", "app.py"]

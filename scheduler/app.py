@@ -1,6 +1,6 @@
 import os
 import uuid
-import runner
+import schedule
 import pathlib
 
 from flask import Flask, jsonify, request, redirect, url_for, g
@@ -42,7 +42,7 @@ def start(slug):
     file.save(filepath)
 
     # Start check50
-    runner.manager.start(id, slug, filepath)
+    scheduler.start(id, slug, filepath)
 
     # Communicate id
     return response(id=id, message="use /get/<id> to get results")
@@ -50,16 +50,17 @@ def start(slug):
 
 @app.route('/get/<id>', methods=["GET"])
 def get(id):
-    status, result = runner.manager.get(id)
+    status, result = scheduler.get(id)
 
-    if status == runner.Status.UNKNOWN:
+    if status == schedule.Status.UNKNOWN:
         return response(id=id, message="unknown")
 
-    if status == runner.Status.BUSY:
+    if status == schedule.Status.BUSY:
         return response(id=id, message="busy")
 
     return response(id=id, message="finished", result=result)
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80)
+    with schedule.Scheduler(4) as scheduler:
+        app.run(host='0.0.0.0', port=80)

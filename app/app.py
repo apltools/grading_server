@@ -2,18 +2,12 @@ import requests
 import os
 import subprocess
 
-import redis
-import rq
-
 from flask import Flask, render_template, request
 from werkzeug import secure_filename
 
 app = Flask(__name__)
 
 SCHEDULER = "scheduler"
-
-cache = redis.Redis(host='redis', port=6379)
-queue = rq.Queue(connection=cache)
 
 @app.route("/")
 def index():

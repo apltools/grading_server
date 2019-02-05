@@ -8,6 +8,8 @@ services:
     tty: true
     links:
       - "scheduler:scheduler"
+    volumes:
+      - "./app:/app"
   scheduler:
     build:
       context: ./scheduler
@@ -15,6 +17,7 @@ services:
       - "4000:80"
     tty: true
     volumes:
+      - "./scheduler:/app"
       - "/var/run/docker.sock:/var/run/docker.sock"
   redis:
     image: "redis:alpine"
