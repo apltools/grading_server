@@ -1,23 +1,25 @@
 import os
 import uuid
 import runner
+import pathlib
 
 from flask import Flask, jsonify, request, redirect, url_for, g
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = './uploads'
+pathlib.Path(UPLOAD_FOLDER).mkdir(parents=True, exist_ok=True)
 ALLOWED_EXTENSIONS = set(['zip'])
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def response(message, id=None, result=None):
     return jsonify(id=id, message=message, result=result)
-
 
 @app.route('/start/<path:slug>', methods=["POST"])
 def start(slug):
