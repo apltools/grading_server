@@ -21,12 +21,15 @@ def allowed_file(filename):
 def response(message, id=None, result=None):
     return jsonify(id=id, message=message, result=result)
 
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
 @app.route('/start', methods=["POST"])
 def start():
+    # Ensure slug exists
     if "slug" not in request.form:
         return response("no 'slug' received, be sure to use the tag 'slug'")
 
@@ -71,5 +74,5 @@ def get(id):
 
 
 if __name__ == "__main__":
-    with schedule.Scheduler(4) as scheduler:
+    with schedule.Scheduler(n_workers=4) as scheduler:
         app.run(host='0.0.0.0', port=80)

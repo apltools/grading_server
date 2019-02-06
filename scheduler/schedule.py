@@ -9,6 +9,7 @@ import tempfile
 import os
 import subprocess
 import json
+import signal
 
 
 class Status(enum.Enum):
@@ -25,6 +26,7 @@ class Scheduler:
         self.jobs = {}
 
     def __enter__(self):
+        # spawn as many workers as requested
         for _ in range(self.n_workers):
             process = subprocess.Popen(
                 ["rq", "worker", "--url", "redis://redis:6379"],
@@ -33,8 +35,16 @@ class Scheduler:
         return self
 
     def __exit__(self, type, value, traceback):
-        # TODO kill workers
-        pass
+        # find all workers
+        workers = rq.Worker.all(queue=self.queue)
+
+        # politely ask workers to kys (warm shutdown)
+        for worker in workers:
+            try:
+                worker.request_stop(signal.SIGINT, None)
+            except rq.worker.StopRequested:
+                # Once worker is ready to stop, kill
+                worker.register_death()
 
     def start(self, id, slug, filepath):
         job = self.queue.enqueue(run_job, id, slug, filepath)
@@ -118,9 +128,10 @@ def run_job(id, slug, filepath):
         result = json.loads(process.stdout.read().decode('utf8'))
 
         # Remove local file
-        # process = subprocess.Popen(
-        #     ["rm", filepath],
-        #     stdout=subprocess.PIPE,
-        #     stderr=subprocess.STDOUT)
+        process = subprocess.Popen(
+            ["rm", filepath],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT)
+        process.wait()
 
     return result
