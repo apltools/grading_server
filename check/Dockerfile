@@ -10,3 +10,5 @@ COPY ./requirements.txt /distro
 RUN python3 -m pip install -r requirements.txt --user
 
 WORKDIR /check
+
+USER ubuntu
