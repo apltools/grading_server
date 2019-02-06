@@ -103,34 +103,15 @@ def run_job(slug, filepath):
             stderr=subprocess.STDOUT)
         process.wait()
 
-        # Unzip zipfile in container
-        process = subprocess.Popen(
-            ["docker", "exec", container.id, "unzip", os.path.basename(filepath)],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-        process.wait()
-
-        # rm zipfile in container
-        process = subprocess.Popen(
-            ["docker", "exec", container.id, "rm", os.path.basename(filepath)],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-        process.wait()
+        # Unzip and remove
+        container.exec_run(f"unzip {os.path.basename(filepath)}")
+        container.exec_run(f"rm {os.path.basename(filepath)}")
 
         # Run check50
-        process = subprocess.Popen(
-            ["docker", "exec", container.id, "python3", "-m", "check50", "-o", "json", slug],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-        output = process.stdout.read().decode('utf8')
-        print(output)
+        output = container.exec_run(f"python3 -m check50 -o json {slug}").output.decode('utf8')
         result = json.loads(output)
 
         # Remove local file
-        # process = subprocess.Popen(
-        #     ["rm", filepath],
-        #     stdout=subprocess.PIPE,
-        #     stderr=subprocess.STDOUT)
-        # process.wait()
+        os.remove(filepath)
 
     return result
