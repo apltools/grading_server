@@ -18,8 +18,8 @@ app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def response(message, id=None, result=None):
-    return jsonify(id=id, message=message, result=result)
+def json_response(message="", status=None, id=None, result=None):
+    return jsonify(id=id, status=status, message=message, result=result)
 
 
 @app.route("/")
@@ -31,19 +31,19 @@ def index():
 def start():
     # Ensure slug exists
     if "slug" not in request.form:
-        return response("no 'slug' received, be sure to use the tag 'slug'")
+        return "no 'slug' received, be sure to use the tag 'slug'", 400
 
     slug = request.form["slug"]
 
     # Ensure file exists
     if "file" not in request.files:
-        return response("no 'file' received, be sure to use the tag 'file'")
+        return "no 'file' received, be sure to use the tag 'file'", 400
 
     file = request.files["file"]
 
     # Ensure file is a .zip (allowed)
     if not allowed_file(file.filename):
-        return response(f"file not allowed, accepting only {', '.join(ALLOWED_EXTENSIONS)}")
+        return f"file not allowed, accepting only {', '.join(ALLOWED_EXTENSIONS)}", 400
 
     # Name file after id
     id = str(uuid.uuid4())
@@ -57,7 +57,7 @@ def start():
     job_id = scheduler.start(slug, filepath)
 
     # Communicate id
-    return response(id=job_id, message="use /get/<id> to get results")
+    return json_response(id=job_id, message="use /get/<id> to get results")
 
 
 @app.route('/get/<id>', methods=["GET"])
@@ -65,12 +65,12 @@ def get(id):
     status, result = scheduler.get(id)
 
     if status == schedule.Status.UNKNOWN:
-        return response(id=id, message="unknown")
+        return json_response(id=id, message="job is unknown", status="unknown")
 
     if status == schedule.Status.BUSY:
-        return response(id=id, message="busy")
+        return json_response(id=id, message="job is enqueued or running", status="busy")
 
-    return response(id=id, message="finished", result=result)
+    return json_response(id=id, message="job is finished", status="finished", result=result)
 
 
 if __name__ == "__main__":

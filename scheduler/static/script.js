@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         url: "/start",
         type: 'POST',
         data: formData,
-        success: function (data) {
+        success: function(data) {
             id = data.id;
             console.log(id, data);
         },
@@ -29,9 +29,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
           url: "/get/" + id,
           type: 'GET',
           dataType: 'json',
-          success: function (data) {
+          success: function(data) {
             console.log("polling", data);
-            if (data["message"] == "finished") {
+            if (data["status"] == "finished") {
               id = "";
               console.log(data["result"]);
               $("#result").text(JSON.stringify(data["result"]), null, 2);
@@ -41,15 +41,3 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
   }, 1000);
 });
-
-function send(slug) {
-  $.ajax({
-    url:"/get/nope",
-    success:function(json){
-      console.log(json);
-    },
-    error:function(){
-      alert("Error");
-    }
-  });
-}
