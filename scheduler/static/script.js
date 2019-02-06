@@ -14,8 +14,8 @@ document.addEventListener("DOMContentLoaded", function(event) {
         type: 'POST',
         data: formData,
         success: function (data) {
-            id = data;
-            console.log(id);
+            id = data.id;
+            console.log(id, data);
         },
         cache: false,
         contentType: false,

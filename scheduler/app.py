@@ -3,7 +3,7 @@ import uuid
 import schedule
 import pathlib
 
-from flask import Flask, jsonify, request, redirect, url_for, g
+from flask import Flask, jsonify, request, redirect, render_template, url_for, g
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = './uploads'
@@ -21,8 +21,17 @@ def allowed_file(filename):
 def response(message, id=None, result=None):
     return jsonify(id=id, message=message, result=result)
 
-@app.route('/start/<path:slug>', methods=["POST"])
-def start(slug):
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+@app.route('/start', methods=["POST"])
+def start():
+    if "slug" not in request.form:
+        return response("no 'slug' received, be sure to use the tag 'slug'")
+
+    slug = request.form["slug"]
+
     # Ensure file exists
     if "file" not in request.files:
         return response("no 'file' received, be sure to use the tag 'file'")
