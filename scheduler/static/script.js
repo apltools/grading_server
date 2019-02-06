@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
           type: 'GET',
           dataType: 'json',
           success: function (data) {
-            console.log("polling");
+            console.log("polling", data);
             if (data["message"] == "finished") {
               id = "";
               console.log(data["result"]);

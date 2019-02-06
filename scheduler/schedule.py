@@ -1,5 +1,6 @@
 import redis
 import rq
+import docker
 import subprocess
 import collections
 import time
@@ -74,42 +75,27 @@ class Scheduler:
         return Status.FINISHED, job.result
 
 
-class Container:
+class CheckContainer:
     def __enter__(self):
+        client = docker.from_env()
+
         # Start check50 container
-        process = subprocess.Popen(
-            ["docker", "run", "-d", "-t", "grading_server_check"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
+        self.container = client.containers.run("grading_server_check", detach=True, tty=True)
+        print(f"STARTED container {self.container.id}")
 
-        self.id = process.stdout.read().strip().decode('utf8')
-        print(f"STARTED container {self.id}")
-
-        return self
+        return self.container
 
     def __exit__(self, type, value, traceback):
-        # Stop check50 container
-        process = subprocess.Popen(
-            ["docker", "container", "stop", self.id],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
+        self.container.stop()
+        print(f"STOPPED container {self.container.id}")
 
-        stopped_container_id = process.stdout.read().strip().decode('utf8')
-        print(f"STOPPED container {stopped_container_id}")
-
-        # Remove check50 container
-        process = subprocess.Popen(
-            ["docker", "container", "rm", self.id],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-
-        removed_container_id = process.stdout.read().strip().decode('utf8')
-        print(f"REMOVED container {removed_container_id}")
+        self.container.remove()
+        print(f"REMOVED container {self.container.id}")
 
 
 def run_job(slug, filepath):
-    # In check50 container
-    with Container() as container:
+    # In check container
+    with CheckContainer() as container:
         # Copy filepath (zipfile) to container
         process = subprocess.Popen(
             ["docker", "cp", filepath, f"{container.id}:/check"],
@@ -136,13 +122,15 @@ def run_job(slug, filepath):
             ["docker", "exec", container.id, "python3", "-m", "check50", "-o", "json", slug],
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT)
-        result = json.loads(process.stdout.read().decode('utf8'))
+        output = process.stdout.read().decode('utf8')
+        print(output)
+        result = json.loads(output)
 
         # Remove local file
-        process = subprocess.Popen(
-            ["rm", filepath],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-        process.wait()
+        # process = subprocess.Popen(
+        #     ["rm", filepath],
+        #     stdout=subprocess.PIPE,
+        #     stderr=subprocess.STDOUT)
+        # process.wait()
 
     return result
