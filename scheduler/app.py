@@ -54,10 +54,10 @@ def start():
     file.save(filepath)
 
     # Start check50
-    scheduler.start(id, slug, filepath)
+    job_id = scheduler.start(slug, filepath)
 
     # Communicate id
-    return response(id=id, message="use /get/<id> to get results")
+    return response(id=job_id, message="use /get/<id> to get results")
 
 
 @app.route('/get/<id>', methods=["GET"])

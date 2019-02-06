@@ -22,11 +22,11 @@ class Scheduler:
     def __init__(self, n_workers=4):
         self.cache = redis.Redis(host='redis', port=6379)
         self.queue = rq.Queue(connection=self.cache)
+        self.finished_registry = rq.registry.FinishedJobRegistry('default', queue=self.queue)
         self.n_workers = n_workers
-        self.jobs = {}
 
     def __enter__(self):
-        # spawn as many workers as requested
+        # Spawn as many workers as requested
         for _ in range(self.n_workers):
             process = subprocess.Popen(
                 ["rq", "worker", "--url", "redis://redis:6379"],
@@ -35,10 +35,10 @@ class Scheduler:
         return self
 
     def __exit__(self, type, value, traceback):
-        # find all workers
+        # Find all workers
         workers = rq.Worker.all(queue=self.queue)
 
-        # politely ask workers to kys (warm shutdown)
+        # Politely ask workers to kys (warm shutdown)
         for worker in workers:
             try:
                 worker.request_stop(signal.SIGINT, None)
@@ -46,22 +46,33 @@ class Scheduler:
                 # Once worker is ready to stop, kill
                 worker.register_death()
 
-    def start(self, id, slug, filepath):
-        job = self.queue.enqueue(run_job, id, slug, filepath)
-        self.jobs[id] = job
+    def start(self, slug, filepath):
+        """Starts a job. Returns job_id."""
+        return self.queue.enqueue(run_job, slug, filepath).id
 
     def get(self, id):
-        job = self.jobs.get(id, None)
+        """Get job result. Returns Status and result as parsed json or None."""
+        # Get job from queue
+        job = self.queue.fetch_job(id)
 
-        if job == None:
+        # Check if job is in queue
+        if job:
+            if job.status != "finished":
+                return Status.BUSY, None
+            else:
+                return Status.FINISHED, job.result
+
+        # Retrieve all (non-expired) finished jobs
+        finished_ids = self.finished_registry.get_job_ids()
+
+        # If Job is not finished, notify unknown and stop
+        if id not in finished_ids:
             return Status.UNKNOWN, None
 
-        result = job.result
+        # Retrieve finished Job
+        job = rq.job.Job.fetch(id, connection=self.cache)
+        return Status.FINISHED, job.result
 
-        if result:
-            return Status.FINISHED, result
-
-        return Status.BUSY, None
 
 class Container:
     def __enter__(self):
@@ -96,7 +107,7 @@ class Container:
         print(f"REMOVED container {removed_container_id}")
 
 
-def run_job(id, slug, filepath):
+def run_job(slug, filepath):
     # In check50 container
     with Container() as container:
         # Copy filepath (zipfile) to container
