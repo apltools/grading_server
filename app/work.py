@@ -2,6 +2,7 @@ import docker
 import subprocess
 import json
 import os
+import requests
 
 class CheckContainer:
     def __enter__(self):
@@ -21,7 +22,7 @@ class CheckContainer:
         print(f"REMOVED container {self.container.id}")
 
 
-def run_job(slug, filepath):
+def run_job(slug, filepath, webhook):
     # In check container
     with CheckContainer() as container:
         # Copy filepath (zipfile) to container
@@ -39,7 +40,11 @@ def run_job(slug, filepath):
         output = container.exec_run(f"python3 -m check50 -o json {slug}").output.decode('utf8')
         result = json.loads(output)
 
-        # Remove local file
-        os.remove(filepath)
+    # Remove local file
+    # os.remove(filepath)
+
+    # Trigger webhook
+    if webhook:
+        requests.post(webhook, json=result)
 
     return result

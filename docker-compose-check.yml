@@ -1,6 +1,6 @@
 version: '3'
 services:
-  checker:
+  check:
     build:
       context: ./check
     tty: true

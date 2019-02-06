@@ -21,7 +21,6 @@ def allowed_file(filename):
 def json_response(message="", status=None, id=None, result=None):
     return jsonify(id=id, status=status, message=message, result=result)
 
-
 @app.route("/")
 def index():
     return render_template("index.html")
@@ -41,6 +40,9 @@ def start():
 
     file = request.files["file"]
 
+    # Get optional webhook
+    webhook = request.form["webhook"] if "webhook" in request.form else None
+
     # Ensure file is a .zip (allowed)
     if not allowed_file(file.filename):
         return f"file not allowed, accepting only {', '.join(ALLOWED_EXTENSIONS)}", 400
@@ -54,7 +56,7 @@ def start():
     file.save(filepath)
 
     # Start check50
-    job_id = scheduler.start(slug, filepath)
+    job_id = scheduler.start(slug, filepath, webhook)
 
     # Communicate id
     return json_response(id=job_id, message="use /get/<id> to get results")

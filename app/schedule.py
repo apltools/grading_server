@@ -42,9 +42,9 @@ class Scheduler:
                 # Once worker is ready to stop, kill
                 worker.register_death()
 
-    def start(self, slug, filepath):
+    def start(self, slug, filepath, webhook):
         """Starts a job. Returns job_id."""
-        return self.queue.enqueue(run_job, slug, filepath).id
+        return self.queue.enqueue(run_job, slug, filepath, webhook).id
 
     def get(self, id):
         """Get job result. Returns Status and result as parsed json or None."""
