@@ -16,9 +16,10 @@ document.addEventListener("DOMContentLoaded", function(event) {
         success: function(data) {
             id = data.id;
             console.log(id, data);
+            $("#post_result").val(JSON.stringify(data, null, 2));
         },
         error: function(data) {
-            $("#result").val(data.responseText);
+            $("#post_result").val(data.responseText);
         },
         cache: false,
         contentType: false,
@@ -43,6 +44,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
               id = "";
               console.log(data["result"]);
               $("#result").val(data);
+            }
+            else {
+              $("#result").val(JSON.stringify(data, null, 2));
             }
           }
       });

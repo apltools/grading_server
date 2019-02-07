@@ -5,15 +5,18 @@
 <body>
   <a href="/rq">Go to monitor</a><br/><br/>
 
-  <h3>Send request</h3>
+  <h3>Send POST request to /start</h3>
   <form id="form" method="post" enctype="multipart/form-data">
     <input type="file" name="file" id="file" required/><br/>
     <input type="text" name="slug" id="slug" placeholder="slug" required/><br/>
     <input type="text" name="webhook" id="webhook" placeholder="webhook"/><br/>
     <button>Submit</button>
   </form>
+
+  <h3>Response from POST request to /start</h3>
+  <textarea id="post_result" readonly rows="8" cols="80"></textarea>
   <br/>
 
-  <h3>Response</h3>
-  <textarea id="result" readonly rows="40" cols="80"></textarea>
+  <h3>GET response from /get/&lt;id&gt;</h3>
+  <textarea id="result" readonly rows="30" cols="80"></textarea>
 </body>
