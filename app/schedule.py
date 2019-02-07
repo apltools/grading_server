@@ -33,7 +33,7 @@ class Scheduler:
                 stderr=subprocess.STDOUT)
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, type=None, value=None, traceback=None):
         # Find all workers
         workers = rq.Worker.all(queue=self.queue)
 

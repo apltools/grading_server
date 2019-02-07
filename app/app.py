@@ -1,6 +1,7 @@
 import os
 import uuid
 import pathlib
+import atexit
 
 import schedule
 
@@ -24,8 +25,10 @@ app.register_blueprint(rq_dashboard.blueprint, url_prefix="/rq")
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
+
 def json_response(message="", status=None, id=None, result=None):
     return jsonify(id=id, status=status, message=message, result=result)
+
 
 @app.route("/")
 def index():
@@ -84,6 +87,9 @@ def get(id):
     return json_response(id=id, message="job is finished", status="finished", result=result)
 
 
+scheduler = schedule.Scheduler(n_workers=4)
+scheduler.__enter__()
+atexit.register(scheduler.__exit__)
+
 if __name__ == "__main__":
-    with schedule.Scheduler(n_workers=4) as scheduler:
-        app.run(host='0.0.0.0', port=80)
+    app.run(host='0.0.0.0', port=5000)
