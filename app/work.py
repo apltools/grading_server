@@ -27,34 +27,35 @@ class JobError(Exception):
 
 
 def run_job(slug, filepath, webhook):
-    # In check container
-    with CheckContainer() as container:
-        # Copy filepath (zipfile) to container
-        process = subprocess.Popen(
-            ["docker", "cp", filepath, f"{container.id}:/check"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT)
-        process.wait()
+    try:
+        # In check container
+        with CheckContainer() as container:
+            # Copy filepath (zipfile) to container
+            process = subprocess.Popen(
+                ["docker", "cp", filepath, f"{container.id}:/check"],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT)
+            process.wait()
 
-        # Unzip and remove
-        container.exec_run(f"unzip {os.path.basename(filepath)}")
-        container.exec_run(f"rm {os.path.basename(filepath)}")
+            # Unzip and remove
+            container.exec_run(f"unzip {os.path.basename(filepath)}")
+            container.exec_run(f"rm {os.path.basename(filepath)}")
 
-        # Run check50
-        output = container.exec_run(f"python3 -m check50 -o json {slug}").output.decode('utf8')
-        try:
-            result = json.loads(output)
-        except:
-            raise JobError(f"check50 crashed, output: {output}")
+            # Run check50
+            output = container.exec_run(f"python3 -m check50 -o json {slug}").output.decode('utf8')
+            try:
+                result = json.loads(output)
+            except:
+                raise JobError(f"check50 crashed, output: {output}")
 
-    # Remove local file
-    os.remove(filepath)
+        # Trigger webhook
+        if webhook:
+            try:
+                requests.post(webhook, json=result)
+            except requests.exceptions.ConnectionError:
+                raise JobError(f"Could not trigger webhook, connection refused")
 
-    # Trigger webhook
-    if webhook:
-        try:
-            requests.post(webhook, json=result)
-        except requests.exceptions.ConnectionError:
-            raise JobError(f"Could not trigger webhook, connection refused")
-
-    return result
+        return result
+    finally:    
+        # Remove local file
+        os.remove(filepath)
