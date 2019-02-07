@@ -3,13 +3,17 @@
   <script src="{{ url_for('static', filename='script.js') }}"> </script>
 </head>
 <body>
+  <a href="/rq">Go to monitor</a><br/><br/>
 
+  <h3>Send request</h3>
   <form id="form" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" id="file"/>
-    <input type="text" name="slug" id="slug"/>
-    <input type="text" name="webhook" id="webhook"/>
+    <input type="file" name="file" id="file" required/><br/>
+    <input type="text" name="slug" id="slug" placeholder="slug" required/><br/>
+    <input type="text" name="webhook" id="webhook" placeholder="webhook"/><br/>
     <button>Submit</button>
   </form>
   <br/>
-  <pre id="result"></pre>
+
+  <h3>Response</h3>
+  <textarea id="result" readonly rows="40" cols="80"></textarea>
 </body>

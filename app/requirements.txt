@@ -4,3 +4,4 @@ Werkzeug==0.14.1
 Flask==1.0.2
 docker==3.7.0
 requests==2.21.0
+rq_dashboard==0.3.12

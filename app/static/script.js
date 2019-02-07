@@ -17,6 +17,9 @@ document.addEventListener("DOMContentLoaded", function(event) {
             id = data.id;
             console.log(id, data);
         },
+        error: function(data) {
+            $("#result").val(data.responseText);
+        },
         cache: false,
         contentType: false,
         processData: false
@@ -34,12 +37,12 @@ document.addEventListener("DOMContentLoaded", function(event) {
             if (data["status"] == "finished") {
               id = "";
               console.log(data["result"]);
-              $("#result").text(JSON.stringify(data["result"]), null, 2);
+              $("#result").val(JSON.stringify(data, null, 2));
             }
             else if (data["status"] == "failed") {
               id = "";
               console.log(data["result"]);
-              $("#result").text(data["result"]);
+              $("#result").val(data);
             }
           }
       });

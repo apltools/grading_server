@@ -19,15 +19,16 @@ class Status(enum.Enum):
 class Scheduler:
     def __init__(self, n_workers=4):
         self.cache = redis.Redis(host='redis', port=6379)
-        self.queue = rq.Queue(connection=self.cache)
-        self.finished_registry = rq.registry.FinishedJobRegistry('default', queue=self.queue)
+        self.queue_name = "check50"
+        self.queue = rq.Queue(self.queue_name, connection=self.cache)
+        self.finished_registry = rq.registry.FinishedJobRegistry("default", queue=self.queue)
         self.n_workers = n_workers
 
     def __enter__(self):
         # Spawn as many workers as requested
         for _ in range(self.n_workers):
             process = subprocess.Popen(
-                ["rq", "worker", "--url", "redis://redis:6379"],
+                ["rq", "worker", self.queue_name, "--url", "redis://redis:6379"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT)
         return self

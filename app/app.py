@@ -1,8 +1,10 @@
 import os
 import uuid
-import schedule
 import pathlib
 
+import schedule
+
+import rq_dashboard
 from flask import Flask, jsonify, request, redirect, render_template, url_for, g
 from werkzeug.utils import secure_filename
 
@@ -13,6 +15,10 @@ ALLOWED_EXTENSIONS = set(['zip'])
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
+rq_dashboard.default_settings.REDIS_HOST = "redis"
+rq_dashboard.default_settings.REDIS_PORT = 6379
+app.config.from_object(rq_dashboard.default_settings)
+app.register_blueprint(rq_dashboard.blueprint, url_prefix="/rq")
 
 
 def allowed_file(filename):
@@ -29,7 +35,7 @@ def index():
 @app.route('/start', methods=["POST"])
 def start():
     # Ensure slug exists
-    if "slug" not in request.form:
+    if "slug" not in request.form or not request.form["slug"]:
         return "no 'slug' received, be sure to use the tag 'slug'", 400
 
     slug = request.form["slug"]
