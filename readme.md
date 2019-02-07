@@ -13,7 +13,7 @@ A simple check50 3.0 grading server build using Flask.
 Visit http://localhost:5000 for a demo and http://localhost:5000/rq to check on worker status.
 
 ## Starting a grading job
-Send a POST request to `/start/` with a zipfile tagged as `file` and a `slug` like `uva/progik/2018/py/hello` named `slug`. Optionally send a webhook named `webhook`. If the job succeeds, the webhook will be triggered with a GET request and a json payload.
+Send a POST request to `/start/` with a zipfile tagged as `file` and a `slug` like `uva/progik/2018/py/hello` named `slug`. Optionally send a webhook named `webhook`. If the job succeeds, the webhook will be triggered with a POST request and a json payload.
 
 For instance via curl
 `curl -F 'file=@files/hello.zip' -F slug='uva/progik/2018/py/hello' localhost:5000/start`

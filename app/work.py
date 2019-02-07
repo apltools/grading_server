@@ -56,6 +56,6 @@ def run_job(slug, filepath, webhook):
                 raise JobError(f"Could not trigger webhook, connection refused")
 
         return result
-    finally:    
+    finally:
         # Remove local file
         os.remove(filepath)
