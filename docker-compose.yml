@@ -11,3 +11,6 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
   redis:
     image: "redis:alpine"
+    # https://github.com/docker-library/redis/issues/35
+    sysctls:
+      - net.core.somaxconn=511
