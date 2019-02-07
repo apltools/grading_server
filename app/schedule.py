@@ -8,9 +8,11 @@ import signal
 
 from work import run_job
 
+
 class Status(enum.Enum):
     UNKNOWN = enum.auto()
     BUSY = enum.auto()
+    FAILED = enum.auto()
     FINISHED = enum.auto()
 
 
@@ -53,10 +55,15 @@ class Scheduler:
 
         # Check if job is in queue
         if job:
-            if job.status != "finished":
-                return Status.BUSY, None
-            else:
+            print(job.status)
+
+            if job.status == "finished":
                 return Status.FINISHED, job.result
+
+            if job.status == "failed":
+                return Status.FAILED, job.exc_info
+
+            return Status.BUSY, None
 
         # Retrieve all (non-expired) finished jobs
         finished_ids = self.finished_registry.get_job_ids()

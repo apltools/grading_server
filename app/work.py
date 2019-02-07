@@ -22,6 +22,10 @@ class CheckContainer:
         print(f"REMOVED container {self.container.id}")
 
 
+class JobError(Exception):
+    pass
+
+
 def run_job(slug, filepath, webhook):
     # In check container
     with CheckContainer() as container:
@@ -38,13 +42,19 @@ def run_job(slug, filepath, webhook):
 
         # Run check50
         output = container.exec_run(f"python3 -m check50 -o json {slug}").output.decode('utf8')
-        result = json.loads(output)
+        try:
+            result = json.loads(output)
+        except:
+            raise JobError(f"check50 crashed, output: {output}")
 
     # Remove local file
-    # os.remove(filepath)
+    os.remove(filepath)
 
     # Trigger webhook
     if webhook:
-        requests.post(webhook, json=result)
+        try:
+            requests.post(webhook, json=result)
+        except requests.exceptions.ConnectionError:
+            raise JobError(f"Could not trigger webhook, connection refused")
 
     return result

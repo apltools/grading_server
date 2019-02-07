@@ -72,6 +72,9 @@ def get(id):
     if status == schedule.Status.BUSY:
         return json_response(id=id, message="job is enqueued or running", status="busy")
 
+    if status == schedule.Status.FAILED:
+        return json_response(id=id, message="job has failed", status="failed", result=result)
+
     return json_response(id=id, message="job is finished", status="finished", result=result)
 
 

@@ -36,6 +36,11 @@ document.addEventListener("DOMContentLoaded", function(event) {
               console.log(data["result"]);
               $("#result").text(JSON.stringify(data["result"]), null, 2);
             }
+            else if (data["status"] == "failed") {
+              id = "";
+              console.log(data["result"]);
+              $("#result").text(data["result"]);
+            }
           }
       });
     }
