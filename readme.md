@@ -1,22 +1,31 @@
 A simple check50 3.0 grading server build using Flask.
 
+## Build
+
+`bash build.sh`
+
 ## Running the server
 
-`bash run.sh`
+`docker-compose up`
+
+## Check if the server is running
+
+Visit http://localhost:5000 for a demo and http://localhost:5000/rq to check on worker status.
 
 ## Starting a grading job
-Send a POST request to `/start/<slug>` with a zipfile tagged as `file`.
+Send a POST request to `/start/` with a zipfile tagged as `file` and a `slug` like `uva/progik/2018/py/hello` named `slug`. Optionally send a webhook named `webhook`. If the job succeeds, the webhook will be triggered with a GET request and a json payload.
 
 For instance via curl
-`curl -F 'file=@hello.zip' localhost:5000/start/uva/progik/2018/py/hello`
+`curl -F 'file=@files/hello.zip' -F slug='uva/progik/2018/py/hello' localhost:5000/start`
 
 The server will respond with a json object like so:
 
 ```json
 {
-  "id": "23423a2d-2d74-410e-a577-da7a6f8400aa",
-  "message": "use /get/<id> to get results",
-  "result": null
+  "id":"e83d0142-61e9-4ea7-bddf-b1f2ac15c9a2",
+  "message":"use /get/<id> to get results",
+  "result":null,
+  "status":null
 }
 ```
 
@@ -24,14 +33,14 @@ The server will respond with a json object like so:
 Send a GET request to `/get/<id>`
 
 For instance via curl
-`curl localhost:5000/get/23423a2d-2d74-410e-a577-da7a6f8400aa`
+`curl localhost:5000/get/e83d0142-61e9-4ea7-bddf-b1f2ac15c9a2`
 
 The server will respond with a json object like so:
 
 ```json
 {
-  "id": "23423a2d-2d74-410e-a577-da7a6f8400aa",
-  "message": "finished",
+  "id": "e83d0142-61e9-4ea7-bddf-b1f2ac15c9a2",
+  "message": "job is finished",
   "result": {
     "results": [
       {
@@ -69,6 +78,7 @@ The server will respond with a json object like so:
       }
     ],
     "version": "3.0.0"
-  }
+  },
+  "status": "finished"
 }
 ```
