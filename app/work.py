@@ -32,7 +32,7 @@ def run_job(slug, filepath, webhook):
         with CheckContainer() as container:
             # Copy filepath (zipfile) to container
             process = subprocess.Popen(
-                ["docker", "cp", filepath, f"{container.id}:/check"],
+                ["docker", "cp", filepath, f"{container.id}:/home/ubuntu/workspace"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT)
             process.wait()
