@@ -52,7 +52,7 @@ def run_job(slug, filepath, webhook):
         # Trigger webhook
         if webhook:
             try:
-                requests.post(webhook, json=result, data={"id":rq.get_current_job().id})
+                requests.post(webhook, json={"id":rq.get_current_job().id, "result":result})
             except requests.exceptions.ConnectionError:
                 raise JobError(f"Could not trigger webhook, connection refused")
 
