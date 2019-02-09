@@ -3,6 +3,7 @@ import subprocess
 import json
 import os
 import requests
+import rq
 
 class CheckContainer:
     def __enter__(self):
@@ -51,7 +52,7 @@ def run_job(slug, filepath, webhook):
         # Trigger webhook
         if webhook:
             try:
-                requests.post(webhook, json=result)
+                requests.post(webhook, json=result, data={"id":rq.get_current_job().id})
             except requests.exceptions.ConnectionError:
                 raise JobError(f"Could not trigger webhook, connection refused")
 

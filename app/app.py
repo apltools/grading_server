@@ -88,8 +88,8 @@ def get(id):
 
 
 scheduler = schedule.Scheduler(n_workers=4)
-scheduler.__enter__()
 atexit.register(scheduler.__exit__)
+scheduler.__enter__()
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
