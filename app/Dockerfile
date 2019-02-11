@@ -15,6 +15,8 @@ RUN apk add openssl-dev openssl
 # move ping (999) to 99, because docker GUID is probably 999
 # https://github.com/willfarrell/docker-crontab/issues/20
 RUN sed -i "s/999/99/" /etc/group
+# move 0 to 98, required for OS X
+RUN sed -i "s/0/98/" /etc/group
 
 # RUN addgroup -g 999 docker
 RUN addgroup -S app_group && adduser -s /bin/sh -D -u 99999 -S app_user -G app_group
