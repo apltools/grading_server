@@ -16,9 +16,9 @@ RUN apk add openssl-dev openssl
 # https://github.com/willfarrell/docker-crontab/issues/20
 RUN sed -i "s/999/99/" /etc/group
 
-RUN addgroup -g 999 docker
-RUN addgroup -S app_group && adduser -D -u 99999 -S app_user -G app_group
-RUN addgroup app_user docker
+# RUN addgroup -g 999 docker
+RUN addgroup -S app_group && adduser -s /bin/sh -D -u 99999 -S app_user -G app_group
+# RUN addgroup app_user docker
 
 # Install docker
 RUN apk add openrc --no-cache
@@ -39,11 +39,14 @@ RUN chown -R app_user:app_group /app
 USER app_user
 
 # Add dest of pip to path
-ENV PATH=$PATH:/home/app_user/.local/bin
-ENV PATH=$PATH:/root/.local/bin
+ENV PATH=$PATH:/home/app_user/.local/bin:/home/app_user/.local/lib/python3.7/site-packages
+# ENV PATH=$PATH:/root/.local/bin
 
 # Install any needed packages specified in requirements.txt
 RUN python -m pip install -r requirements.txt --user
 
+USER root
+
 # CMD uwsgi --http 0.0.0.0:5000 --wsgi-file app.py --callable app --processes 4 --threads 2 --uid user
-CMD uwsgi --master --https 0.0.0.0:5000,certs/pub.pem,certs/priv.pem --wsgi-file app.py --callable app --processes 4 --threads 2 # --uid app_user
+CMD sh init.sh
+# && uwsgi --master --https 0.0.0.0:5000,certs/pub.pem,certs/priv.pem --wsgi-file app.py --callable app --processes 4 --threads 2 # --uid app_user
