@@ -28,7 +28,10 @@ ENV PATH=$PATH:/root/.local/bin
 # Own docker sock
 # RUN chown app_user:app_group /var/run/docker.sock
 
+
 USER root
+
+RUN chown app_user:app_group /app
 
 # Install any needed packages specified in requirements.txt
 RUN python -m pip install -r requirements.txt

@@ -7,7 +7,7 @@ services:
       - "5000:5000"
     tty: true
     volumes:
-      - "./app:/app"
+      #- "./app:/app"
       - "/var/run/docker.sock:/var/run/docker.sock"
   redis:
     image: "redis:alpine"
