@@ -2,6 +2,8 @@ files
 files/*
 uploads
 uploads/*
+app/certs
+app/certs/*
 .DS_Store
 .python-version
 
