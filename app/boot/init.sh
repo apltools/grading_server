@@ -7,4 +7,4 @@ addgroup -g ${DOCKER_GID} ${DOCKER_GROUP}
 addgroup ${REGULAR_USER} ${DOCKER_GROUP}
 chown -R app_user:app_group /app
 
-su - app_user -c 'sh /app/cont.sh'
+su - app_user -c 'sh /app/boot/runner.sh'
