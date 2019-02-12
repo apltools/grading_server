@@ -150,7 +150,10 @@ def get(id):
         return json_response(id=id, message="job is unknown", status="unknown")
 
     if status == schedule.Status.BUSY:
-        return json_response(id=id, message="job is enqueued or running", status="busy")
+        return json_response(id=id, message="job is running", status="busy")
+
+    if status == schedule.Status.QUEUED:
+        return json_response(id=id, message="job is queued", status="queued")
 
     if status == schedule.Status.FAILED:
         return json_response(id=id, message="job has failed", status="failed", result=result)

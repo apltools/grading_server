@@ -12,6 +12,7 @@ import work
 class Status(enum.Enum):
     UNKNOWN = enum.auto()
     BUSY = enum.auto()
+    QUEUED = enum.auto()
     FAILED = enum.auto()
     FINISHED = enum.auto()
 
@@ -71,6 +72,9 @@ class Scheduler:
 
             if job.status == "failed":
                 return Status.FAILED, job.exc_info
+
+            if job.status == "queued":
+                return Status.QUEUED, None
 
             return Status.BUSY, None
 
