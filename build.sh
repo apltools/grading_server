@@ -1,3 +1,4 @@
+# Set up RSA keys
 if [ ! -d ./app/certs ]; then
   mkdir ./app/certs
   openssl req -x509 -newkey rsa:4086 \
@@ -7,4 +8,13 @@ if [ ! -d ./app/certs ]; then
     -days 3650 -nodes -sha256
 fi
 
+# Configure a password
+if [ ! -f ./app/certs/password.txt ]; then
+  echo "No password detected, configure a new password:"
+  read password
+  touch ./app/certs/password.txt
+  echo "$password" > ./app/certs/password.txt
+fi
+
+# Run app
 docker-compose -f docker-compose.yml -f docker-compose-check.yml build
