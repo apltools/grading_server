@@ -75,7 +75,14 @@ def check50(slug, filepath, webhook):
 def check50v2(slug, filepath, webhook):
     with job(filepath, container_type=LegacyContainer) as container:
         output = container.exec_run(f"check50 -d -l {slug}").output.decode('utf8')
-        json = {"check50": parse(output)}
+
+        # check50v2 does not garantee json output
+        try:
+            output = parse(output)
+        except JobError:
+            pass
+
+        json = {"check50": output}
         json["style50"] = style50(container)
         trigger(webhook, json)
     return json

@@ -74,7 +74,8 @@ class Scheduler:
                 return Status.FAILED, job.exc_info
 
             if job.status == "queued":
-                return Status.QUEUED, None
+                ids = self.queue.get_job_ids()
+                return Status.QUEUED, ids.index(id)
 
             return Status.BUSY, None
 

@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
             else if (data["status"] == "failed") {
               id = "";
               console.log(data["result"]);
-              $("#result").val(data);
+              $("#result").val(JSON.stringify(data, null, 2));
             }
             else {
               $("#result").val(JSON.stringify(data, null, 2));
