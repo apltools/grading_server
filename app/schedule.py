@@ -51,7 +51,7 @@ class Scheduler:
 
     def start_checkpy(self, repo, args, filepath, webhook):
         """Starts a checkpy job. Returns job_id."""
-        return self.queue.enqueue(work.check50, repo, args, filepath, webhook).id
+        return self.queue.enqueue(work.checkpy, repo, args, filepath, webhook).id
 
     def get(self, id):
         """Get job result. Returns Status and result as parsed json or None."""

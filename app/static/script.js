@@ -27,6 +27,32 @@ document.addEventListener("DOMContentLoaded", function(event) {
     });
   });
 
+  $("#checkpy_form").submit(function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+
+    for (var [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+
+    $.ajax({
+        url: "/checkpy",
+        type: 'POST',
+        data: formData,
+        success: function(data) {
+            id = data.id;
+            console.log(id, data);
+            $("#post_result").val(JSON.stringify(data, null, 2));
+        },
+        error: function(data) {
+            $("#post_result").val(data.responseText);
+        },
+        cache: false,
+        contentType: false,
+        processData: false
+    });
+  });
+
   window.setInterval(function() {
     if (id !== "") {
       $.ajax({

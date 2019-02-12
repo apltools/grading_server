@@ -5,32 +5,44 @@
 <body>
   <a href="/rq">Go to monitor</a><br/><br/>
 
-  <h3>Send POST request to /start</h3>
-  <form id="check50_form" method="post" enctype="multipart/form-data">
-    <select name="tool" id="tool">
-      <option value="check50">check50</option>
-      <option value="check50v2">check50v2</option>
-    </select><br/>
-    <input type="file" name="file" id="file" required/><br/>
-    <input type="text" name="slug" id="slug" placeholder="slug" required/><br/>
-    <input type="text" name="webhook" id="webhook" placeholder="optional webhook"/><br/>
-    <input type="password" name="password" id="password" placeholder="password" required/><br/>
-    <button>Submit</button>
-  </form>
+  <h3>Send POST request to /&lt;tool&gt;</h3>
 
-  <form id="checkpy_form" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" id="file" required/><br/>
-    <input type="text" name="repo" id="repo" placeholder="repo" required/><br/>
-    <input type="text" name="args" id="args" placeholder="checkpy args" required/><br/>
-    <input type="text" name="webhook" id="webhook" placeholder="optional webhook"/><br/>
-    <input type="password" name="password" id="password" placeholder="password" required/><br/>
-    <button>Submit</button>
-  </form>
+  <div style="float:left;">
+    <h4>check50</h4>
+    <form id="check50_form" method="post" enctype="multipart/form-data">
+      <select name="tool" id="tool">
+        <option value="check50">check50</option>
+        <option value="check50v2">check50v2</option>
+      </select><br/>
+      <input type="file" name="file" required/><br/>
+      <input type="text" name="slug" placeholder="slug" required/><br/>
+      <input type="text" name="webhook" placeholder="optional webhook"/><br/>
+      <input type="password" name="password" placeholder="password" required/><br/>
+      <button>Submit</button>
+    </form>
+  </div>
 
-  <h3>Response from POST request to /start</h3>
-  <textarea id="post_result" readonly rows="8" cols="80"></textarea>
+  <div style="float:left;">
+    <h4>checkpy</h4>
+    <form id="checkpy_form" method="post" enctype="multipart/form-data">
+      <input type="file" name="file" required/><br/>
+      <input type="text" name="repo" placeholder="repo" required/><br/>
+      <input type="text" name="args" placeholder="checkpy args" required/><br/>
+      <input type="text" name="webhook" placeholder="optional webhook"/><br/>
+      <input type="password" name="password" placeholder="password" required/><br/>
+      <button>Submit</button>
+    </form>
+  </div>
+
+  <div style="float:left; clear:left;">
+    <h3>Response from POST request to /start</h3>
+    <textarea id="post_result" readonly rows="8" cols="80"></textarea>
+  </div>
   <br/>
 
-  <h3>GET response from /get/&lt;id&gt;</h3>
-  <textarea id="result" readonly rows="30" cols="80"></textarea>
+  <div style="float:left; clear:left;">
+    <h3>GET response from /get/&lt;id&gt;</h3>
+    <textarea id="result" readonly rows="20" cols="80"></textarea>
+  </div>
+
 </body>
