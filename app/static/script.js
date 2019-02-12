@@ -1,7 +1,7 @@
 var id = "";
 
 document.addEventListener("DOMContentLoaded", function(event) {
-  $("#form").submit(function(e) {
+  $("#check50_form").submit(function(e) {
     e.preventDefault();
     var formData = new FormData(this);
 

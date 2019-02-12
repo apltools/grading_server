@@ -38,6 +38,53 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/checkpy", methods=["POST"])
+def checkpy():
+    # Ensure password is correct
+    password = request.form["password"]
+    if password != PASSWORD:
+        return "incorrect password", 400
+
+    # Ensure args exists
+    if "args" not in request.form or not request.form["args"]:
+        return "no 'args' received, be sure to use the tag 'args'", 400
+
+    args = request.form["args"]
+
+    # Ensure repo exists
+    if "repo" not in request.form or not request.form["repo"]:
+        return "no 'repo' received, be sure to use the tag 'repo'", 400
+
+    repo = request.form["repo"]
+
+    # Ensure file exists
+    if "file" not in request.files:
+        return "no 'file' received, be sure to use the tag 'file'", 400
+
+    file = request.files["file"]
+
+    # Ensure file is a .zip (allowed)
+    if not allowed_file(file.filename):
+        return f"file not allowed, accepting only {', '.join(ALLOWED_EXTENSIONS)}", 400
+
+    # Name file after id
+    id = str(uuid.uuid4())
+    filename = f"{id}.zip"
+
+    # Store file on disk
+    filepath = os.path.abspath(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    file.save(filepath)
+
+    # Get optional webhook
+    webhook = request.form["webhook"] if "webhook" in request.form else None
+
+    # Start check50
+    job_id = scheduler.start_checkpy(repo, args, filepath, webhook)
+
+    # Communicate id
+    return json_response(id=job_id, message="use /get/<id> to get results")
+
+
 @app.route('/check50', methods=["POST"])
 def check50():
     # Ensure password is correct
@@ -57,9 +104,6 @@ def check50():
 
     file = request.files["file"]
 
-    # Get optional webhook
-    webhook = request.form["webhook"] if "webhook" in request.form else None
-
     # Ensure file is a .zip (allowed)
     if not allowed_file(file.filename):
         return f"file not allowed, accepting only {', '.join(ALLOWED_EXTENSIONS)}", 400
@@ -72,8 +116,11 @@ def check50():
     filepath = os.path.abspath(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     file.save(filepath)
 
+    # Get optional webhook
+    webhook = request.form["webhook"] if "webhook" in request.form else None
+
     # Start check50
-    job_id = scheduler.start(slug, filepath, webhook)
+    job_id = scheduler.start_check50(slug, filepath, webhook)
 
     # Communicate id
     return json_response(id=job_id, message="use /get/<id> to get results")

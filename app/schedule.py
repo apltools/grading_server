@@ -6,7 +6,7 @@ import subprocess
 import json
 import signal
 
-from work import run_job
+import work
 
 
 class Status(enum.Enum):
@@ -45,9 +45,13 @@ class Scheduler:
                 # Once worker is ready to stop, kill
                 worker.register_death()
 
-    def start(self, slug, filepath, webhook):
-        """Starts a job. Returns job_id."""
-        return self.queue.enqueue(run_job, slug, filepath, webhook).id
+    def start_check50(self, slug, filepath, webhook):
+        """Starts a check50 job. Returns job_id."""
+        return self.queue.enqueue(work.check50, slug, filepath, webhook).id
+
+    def start_checkpy(self, repo, args, filepath, webhook):
+        """Starts a checkpy job. Returns job_id."""
+        return self.queue.enqueue(work.check50, repo, args, filepath, webhook).id
 
     def get(self, id):
         """Get job result. Returns Status and result as parsed json or None."""
