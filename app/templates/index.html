@@ -7,6 +7,11 @@
 
   <h3>Send POST request to /start</h3>
   <form id="form" method="post" enctype="multipart/form-data">
+    <select name="tool" id="tool">
+      <option value="check50">check50</option>
+      <option value="checkpy">checkpy</option>
+      <option value="check50v2">check50v2</option>
+    </select><br/>
     <input type="file" name="file" id="file" required/><br/>
     <input type="text" name="slug" id="slug" placeholder="slug" required/><br/>
     <input type="text" name="webhook" id="webhook" placeholder="optional webhook"/><br/>

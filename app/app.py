@@ -38,8 +38,8 @@ def index():
     return render_template("index.html")
 
 
-@app.route('/start', methods=["POST"])
-def start():
+@app.route('/check50', methods=["POST"])
+def check50():
     # Ensure password is correct
     password = request.form["password"]
     if password != PASSWORD:

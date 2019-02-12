@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
     }
 
     $.ajax({
-        url: "/start",
+        url: "/" + this.tool.value,
         type: 'POST',
         data: formData,
         success: function(data) {
