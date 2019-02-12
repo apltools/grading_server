@@ -42,12 +42,16 @@ def trigger(webhook, json):
         except requests.exceptions.ConnectionError:
             raise JobError(f"Could not trigger webhook: {webhook}, connection refused")
 
+def style50(container):
+    return float(container.exec_run("style50 . -o score").output.decode('utf8'))
+
 
 def checkpy(repo, args, filepath, webhook):
     with job(filepath) as container:
         container.exec_run(f"python3 -m checkpy -d {repo}")
         output = container.exec_run(f"python3 -m checkpy --json {args}").output.decode('utf8')
         json = parse(output)
+        json["style50"] = style50(container)
         trigger(webhook, json)
     return json
 
@@ -56,15 +60,16 @@ def check50(slug, filepath, webhook):
     with job(filepath) as container:
         output = container.exec_run(f"python3 -m check50 -o json {slug}").output.decode('utf8')
         json = parse(output)
+        json["style50"] = style50(container)
         trigger(webhook, json)
     return json
 
 
 @contextlib.contextmanager
-def job(filepath):
+def job(filepath, container_type=CheckContainer):
     try:
         # In check container
-        with CheckContainer() as container:
+        with container_type() as container:
             # Copy filepath (zipfile) to container
             process = subprocess.Popen(
                 ["docker", "cp", filepath, f"{container.id}:/home/ubuntu/workspace"],
