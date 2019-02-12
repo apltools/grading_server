@@ -13,6 +13,9 @@ UPLOAD_FOLDER = './uploads'
 pathlib.Path(UPLOAD_FOLDER).mkdir(parents=True, exist_ok=True)
 ALLOWED_EXTENSIONS = set(['zip'])
 
+with open("certs/password.txt") as f:
+    PASSWORD = f.read().strip()
+
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
@@ -37,6 +40,11 @@ def index():
 
 @app.route('/start', methods=["POST"])
 def start():
+    # Ensure password is correct
+    password = request.form["password"]
+    if password != PASSWORD:
+        return "incorrect password", 400
+
     # Ensure slug exists
     if "slug" not in request.form or not request.form["slug"]:
         return "no 'slug' received, be sure to use the tag 'slug'", 400

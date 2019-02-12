@@ -16,5 +16,5 @@ if [ ! -f ./app/certs/password.txt ]; then
   echo "$password" > ./app/certs/password.txt
 fi
 
-# Run app
+# Build app
 docker-compose -f docker-compose.yml -f docker-compose-check.yml build
