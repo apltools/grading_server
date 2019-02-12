@@ -11,11 +11,13 @@ class JobError(Exception):
 
 
 class CheckContainer:
+    docker_image = "grading_server_check"
+
     def __enter__(self):
         client = docker.from_env()
 
         # Start check50 container
-        self.container = client.containers.run("grading_server_check", detach=True, tty=True)
+        self.container = client.containers.run(self.docker_image, detach=True, tty=True)
         print(f"STARTED container {self.container.id}")
 
         return self.container
@@ -26,6 +28,10 @@ class CheckContainer:
 
         self.container.remove()
         print(f"REMOVED container {self.container.id}")
+
+
+class LegacyContainer(CheckContainer):
+    docker_image = "cs50/check"
 
 
 def parse(output):
@@ -42,6 +48,7 @@ def trigger(webhook, json):
         except requests.exceptions.ConnectionError:
             raise JobError(f"Could not trigger webhook: {webhook}, connection refused")
 
+
 def style50(container):
     return float(container.exec_run("style50 . -o score").output.decode('utf8'))
 
@@ -50,7 +57,7 @@ def checkpy(repo, args, filepath, webhook):
     with job(filepath) as container:
         container.exec_run(f"python3 -m checkpy -d {repo}")
         output = container.exec_run(f"python3 -m checkpy --json {args}").output.decode('utf8')
-        json = parse(output)
+        json = {"checkpy": parse(output)}
         json["style50"] = style50(container)
         trigger(webhook, json)
     return json
@@ -58,8 +65,17 @@ def checkpy(repo, args, filepath, webhook):
 
 def check50(slug, filepath, webhook):
     with job(filepath) as container:
-        output = container.exec_run(f"python3 -m check50 -o json {slug}").output.decode('utf8')
-        json = parse(output)
+        output = container.exec_run(f"python3 -m check50 --local -o json {slug}").output.decode('utf8')
+        json = {"check50": parse(output)}
+        json["style50"] = style50(container)
+        trigger(webhook, json)
+    return json
+
+
+def check50v2(slug, filepath, webhook):
+    with job(filepath, container_type=LegacyContainer) as container:
+        output = container.exec_run(f"check50 -d -l {slug}").output.decode('utf8')
+        json = {"check50": parse(output)}
         json["style50"] = style50(container)
         trigger(webhook, json)
     return json

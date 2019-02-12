@@ -92,6 +92,19 @@ def check50():
     if password != PASSWORD:
         return "incorrect password", 400
 
+    version = request.form.get("version") or 3
+
+    # Ensure version is an integer
+    try:
+        version = int(version)
+    except ValueError:
+        return f"version: {version} must be an integer", 400
+
+    # Ensure version is known
+    versions = [2,3]
+    if version not in versions:
+        return f"unknown version {version}, choose one of: {versions}", 400
+
     # Ensure slug exists
     if "slug" not in request.form or not request.form["slug"]:
         return "no 'slug' received, be sure to use the tag 'slug'", 400
@@ -117,10 +130,13 @@ def check50():
     file.save(filepath)
 
     # Get optional webhook
-    webhook = request.form["webhook"] if "webhook" in request.form else None
+    webhook = request.form.get("webhook") or None
 
     # Start check50
-    job_id = scheduler.start_check50(slug, filepath, webhook)
+    if version == 3:
+        job_id = scheduler.start_check50(slug, filepath, webhook)
+    else:
+        job_id = scheduler.start_check50v2(slug, filepath, webhook)
 
     # Communicate id
     return json_response(id=job_id, message="use /get/<id> to get results")

@@ -49,6 +49,10 @@ class Scheduler:
         """Starts a check50 job. Returns job_id."""
         return self.queue.enqueue(work.check50, slug, filepath, webhook).id
 
+    def start_check50v2(self, slug, filepath, webhook):
+        """Starts a check50v2 job. Retrns job_id."""
+        return self.queue.enqueue(work.check50v2, slug, filepath, webhook).id
+
     def start_checkpy(self, repo, args, filepath, webhook):
         """Starts a checkpy job. Returns job_id."""
         return self.queue.enqueue(work.checkpy, repo, args, filepath, webhook).id
