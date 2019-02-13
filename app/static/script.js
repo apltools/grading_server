@@ -1,57 +1,37 @@
 var id = "";
 
+function post(form, dest) {
+  form.submit(function(e) {
+    e.preventDefault();
+    var formData = new FormData(this);
+
+    for (var [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
+
+    $.ajax({
+        url: dest,
+        type: 'POST',
+        data: formData,
+        success: function(data) {
+            id = data.id;
+            console.log(id, data);
+            $("#post_result").val(JSON.stringify(data, null, 2));
+        },
+        error: function(data) {
+            $("#post_result").val(data.responseText);
+        },
+        cache: false,
+        contentType: false,
+        processData: false
+    });
+  });
+}
+
 document.addEventListener("DOMContentLoaded", function(event) {
-  $("#check50_form").submit(function(e) {
-    e.preventDefault();
-    var formData = new FormData(this);
-
-    for (var [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
-
-    $.ajax({
-        url: "/check50",
-        type: 'POST',
-        data: formData,
-        success: function(data) {
-            id = data.id;
-            console.log(id, data);
-            $("#post_result").val(JSON.stringify(data, null, 2));
-        },
-        error: function(data) {
-            $("#post_result").val(data.responseText);
-        },
-        cache: false,
-        contentType: false,
-        processData: false
-    });
-  });
-
-  $("#checkpy_form").submit(function(e) {
-    e.preventDefault();
-    var formData = new FormData(this);
-
-    for (var [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
-
-    $.ajax({
-        url: "/checkpy",
-        type: 'POST',
-        data: formData,
-        success: function(data) {
-            id = data.id;
-            console.log(id, data);
-            $("#post_result").val(JSON.stringify(data, null, 2));
-        },
-        error: function(data) {
-            $("#post_result").val(data.responseText);
-        },
-        cache: false,
-        contentType: false,
-        processData: false
-    });
-  });
+  post($("#check50_form"), "/check50");
+  post($("#check50v2_form"), "/check50v2");
+  post($("#checkpy_form"), "/checkpy");
 
   window.setInterval(function() {
     if (id !== "") {

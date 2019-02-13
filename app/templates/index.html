@@ -10,10 +10,17 @@
   <div style="float:left;">
     <h4>check50</h4>
     <form id="check50_form" method="post" enctype="multipart/form-data">
-      <select name="version">
-        <option value=3>3</option>
-        <option value=2>2</option>
-      </select><br/>
+      <input type="file" name="file" required/><br/>
+      <input type="text" name="slug" placeholder="slug" required/><br/>
+      <input type="text" name="webhook" placeholder="optional webhook"/><br/>
+      <input type="password" name="password" placeholder="password" required/><br/>
+      <button>Submit</button>
+    </form>
+  </div>
+
+  <div style="float:left;">
+    <h4>check50v2</h4>
+    <form id="check50v2_form" method="post" enctype="multipart/form-data">
       <input type="file" name="file" required/><br/>
       <input type="text" name="slug" placeholder="slug" required/><br/>
       <input type="text" name="webhook" placeholder="optional webhook"/><br/>

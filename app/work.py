@@ -82,7 +82,7 @@ def check50v2(slug, filepath, webhook):
         except JobError:
             pass
 
-        json = {"check50": output}
+        json = {"check50v2": output}
         json["style50"] = style50(container)
         trigger(webhook, json)
     return json
