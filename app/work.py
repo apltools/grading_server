@@ -50,7 +50,7 @@ def trigger(webhook, json):
 
 
 def style50(container):
-    return float(container.exec_run("style50 . -o score").output.decode('utf8'))
+    return float(container.exec_run("style50 . -o score", stderr=False).output.decode('utf8'))
 
 
 def checkpy(repo, args, filepath, webhook):
