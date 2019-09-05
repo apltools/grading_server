@@ -1,4 +1,2 @@
-# Use once https://github.com/cs50/check50/pull/145 accepted
-# -e git://github.com/cs50/check50.git@develop#egg=check50
--e git://github.com/Jelleas/check50.git@develop#egg=check50
 checkpy
+check50>=3

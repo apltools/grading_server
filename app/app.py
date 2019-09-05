@@ -85,33 +85,13 @@ def checkpy():
     return json_response(id=job_id, message="use /get/<id> to get results")
 
 
-@app.route("/check50v2", methods=["POST"])
-def check50v2():
-    return check50(version=2)
-
-
 @app.route("/check50", methods=["POST"])
 @app.route("/check50v3", methods=["POST"])
-def check50v3():
-    return check50(version=3)
-
-
-def check50(version=3):
-    # Ensure version is an integer
-    try:
-        version = int(version)
-    except ValueError:
-        return f"version: {version} must be an integer", 400
-
+def check50():
     # Ensure password is correct
     password = request.form["password"]
     if password != PASSWORD:
         return "incorrect password", 400
-
-    # Ensure version is known
-    versions = [2,3]
-    if version not in versions:
-        return f"unknown version {version}, choose one of: {versions}", 400
 
     # Ensure slug exists
     if "slug" not in request.form or not request.form["slug"]:
@@ -141,10 +121,7 @@ def check50(version=3):
     webhook = request.form.get("webhook") or None
 
     # Start check50
-    if version == 3:
-        job_id = scheduler.start_check50(slug, filepath, webhook)
-    else:
-        job_id = scheduler.start_check50v2(slug, filepath, webhook)
+    job_id = scheduler.start_check50(slug, filepath, webhook)
 
     # Communicate id
     return json_response(id=job_id, message="use /get/<id> to get results")

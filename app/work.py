@@ -65,24 +65,8 @@ def checkpy(repo, args, filepath, webhook):
 
 def check50(slug, filepath, webhook):
     with job(filepath) as container:
-        output = container.exec_run(f"python3 -m check50 --local -o json {slug}").output.decode('utf8')
+        output = container.exec_run(f"check50 --local -o json -- {slug}").output.decode('utf8')
         json = {"check50": parse(output)}
-        json["style50"] = style50(container)
-        trigger(webhook, json)
-    return json
-
-
-def check50v2(slug, filepath, webhook):
-    with job(filepath, container_type=LegacyContainer) as container:
-        output = container.exec_run(f"check50 -d -l {slug}").output.decode('utf8')
-
-        # check50v2 does not garantee json output
-        try:
-            output = parse(output)
-        except JobError:
-            pass
-
-        json = {"check50v2": output}
         json["style50"] = style50(container)
         trigger(webhook, json)
     return json

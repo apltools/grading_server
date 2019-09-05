@@ -13,4 +13,7 @@ RUN python3 -m pip install -r requirements.txt
 RUN chown -R ubuntu:ubuntu $(python3 -c "import site; print(site.getsitepackages()[0] + '/checkpy')")
 
 WORKDIR /home/ubuntu/workspace
+
+RUN chown -R ubuntu:ubuntu /home/ubuntu/workspace
+
 USER ubuntu
