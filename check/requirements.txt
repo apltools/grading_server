@@ -1,2 +1,4 @@
 checkpy
 check50>=3
+matplotlib
+jupyter
