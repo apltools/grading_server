@@ -58,7 +58,7 @@ def checkpy(repo, args, filepath, webhook):
         container.exec_run(f"python3 -m checkpy -d {repo}")
         output = container.exec_run(f"python3 -m checkpy --json {args}").output.decode('utf8')
         json = {"checkpy": parse(output)}
-        json["style50"] = style50(container)
+        #json["style50"] = style50(container)
         trigger(webhook, json)
     return json
 
@@ -67,7 +67,7 @@ def check50(slug, filepath, webhook):
     with job(filepath) as container:
         output = container.exec_run(f"check50 --local -o json -- {slug}").output.decode('utf8')
         json = {"check50": parse(output)}
-        json["style50"] = style50(container)
+        #json["style50"] = style50(container)
         trigger(webhook, json)
     return json
 
