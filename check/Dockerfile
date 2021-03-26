@@ -20,9 +20,6 @@ RUN pip3 install \
         opencv-python && \
     python3 -m nltk.downloader -d /usr/share/nltk_data/ punkt
 
-COPY ./docker-entry.sh /
-RUN chmod a+x /docker-entry.sh
-
 RUN sed -i '/^ubuntu ALL=(ALL) NOPASSWD:ALL$/d' /etc/sudoers
 
 USER ubuntu
