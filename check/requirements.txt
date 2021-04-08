@@ -1,4 +1,4 @@
 checkpy
-check50>=3
+git+https://github.com/cs50/check50@nullcontext
 matplotlib
 jupyter
