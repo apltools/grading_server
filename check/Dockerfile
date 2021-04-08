@@ -6,6 +6,9 @@ ARG DEBIANFRONTEND=noninteractive
 
 RUN apt-get update -qq && apt-get install -y jq
 
+# temporary workaround for check50, rm merged
+RUN pip3 install git+https://github.com/cs50/check50@nullcontext --upgrade
+
 # Install Python packages
 # TODO remove werkzeug after https://github.com/fengsp/flask-session/issues/99 is fixed
 RUN pip3 install \
