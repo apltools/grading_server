@@ -16,9 +16,6 @@ ALLOWED_EXTENSIONS = set(['zip'])
 with open("certs/password.txt") as f:
     PASSWORD = f.read().strip()
 
-with open("certs/gh_auth.txt") as f:
-    GH_AUTH = f.read().strip()
-
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
@@ -82,7 +79,7 @@ def checkpy():
     webhook = request.form["webhook"] if "webhook" in request.form else None
 
     # Start checkpy
-    job_id = scheduler.start_checkpy(repo, args, filepath, webhook, GH_AUTH)
+    job_id = scheduler.start_checkpy(repo, args, filepath, webhook)
 
     # Communicate id
     return json_response(id=job_id, message="use /get/<id> to get results")

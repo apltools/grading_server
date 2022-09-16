@@ -5,10 +5,16 @@ import os
 import requests
 import rq
 import contextlib
+import os
+
+if os.path.exists("certs/gh_auth.txt"): 
+    with open("certs/gh_auth.txt") as f:
+        GH_AUTH = f.read().strip()
+else:
+    GH_AUTH = None
 
 class JobError(Exception):
     pass
-
 
 class CheckContainer:
     docker_image = "grading_server_check"
@@ -53,8 +59,8 @@ def style50(container):
     return float(container.exec_run("style50 . -o score", stderr=False).output.decode('utf8'))
 
 
-def checkpy(repo, args, filepath, webhook, gh_auth=None):
-    gh_auth = f"--gh-auth {gh_auth}" if gh_auth else ""
+def checkpy(repo, args, filepath, webhook):
+    gh_auth = f"--gh-auth {GH_AUTH}" if GH_AUTH else ""
     with job(filepath) as container:
         container.exec_run(f"python3 -m checkpy {gh_auth} -d {repo}")
         output = container.exec_run(f"python3 -m checkpy {gh_auth} --json {args}").output.decode('utf8')
