@@ -53,10 +53,11 @@ def style50(container):
     return float(container.exec_run("style50 . -o score", stderr=False).output.decode('utf8'))
 
 
-def checkpy(repo, args, filepath, webhook):
+def checkpy(repo, args, filepath, webhook, gh_auth=None):
+    gh_auth = f"--gh-auth {gh_auth}" if gh_auth else ""
     with job(filepath) as container:
-        container.exec_run(f"python3 -m checkpy -d {repo}")
-        output = container.exec_run(f"python3 -m checkpy --json {args}").output.decode('utf8')
+        container.exec_run(f"python3 -m checkpy {gh_auth} -d {repo}")
+        output = container.exec_run(f"python3 -m checkpy {gh_auth} --json {args}").output.decode('utf8')
         json = {"checkpy": parse(output)}
         #json["style50"] = style50(container)
         trigger(webhook, json)

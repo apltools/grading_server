@@ -6,7 +6,7 @@ import atexit
 import schedule
 
 import rq_dashboard
-from flask import Flask, jsonify, request, redirect, render_template, url_for, g
+from flask import Flask, jsonify, request, render_template
 from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = './uploads'
@@ -15,6 +15,9 @@ ALLOWED_EXTENSIONS = set(['zip'])
 
 with open("certs/password.txt") as f:
     PASSWORD = f.read().strip()
+
+with open("certs/gh_auth.txt") as f:
+    GH_AUTH = f.read().strip()
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -78,8 +81,8 @@ def checkpy():
     # Get optional webhook
     webhook = request.form["webhook"] if "webhook" in request.form else None
 
-    # Start check50
-    job_id = scheduler.start_checkpy(repo, args, filepath, webhook)
+    # Start checkpy
+    job_id = scheduler.start_checkpy(repo, args, filepath, webhook, GH_AUTH)
 
     # Communicate id
     return json_response(id=job_id, message="use /get/<id> to get results")
