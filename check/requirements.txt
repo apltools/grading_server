@@ -1,3 +1,5 @@
 checkpy
 matplotlib
 jupyter
+mypy
+
