@@ -64,8 +64,15 @@ def checkpy(repo, args, filepath, webhook):
     with job(filepath) as container:
         container.exec_run(f"python3 -m checkpy {gh_auth} -d {repo}")
         output = container.exec_run(f"python3 -m checkpy {gh_auth} --json {args}").output.decode('utf8')
+
+        # rm any output until the first open square bracket
+        # to prevent any python warnings from breaking json.parse
+        for i, line in enumerate(output.split("\n")):
+            if line.strip().startswith("["):
+                output = "\n".join(output.split("\n")[i:])
+                break
+
         json = {"checkpy": parse(output)}
-        #json["style50"] = style50(container)
         trigger(webhook, json)
     return json
 
