@@ -25,6 +25,8 @@ RUN pip3 install \
 
 RUN sed -i '/^ubuntu ALL=(ALL) NOPASSWD:ALL$/d' /etc/sudoers
 
+RUN useradd -ms /bin/bash ubuntu
+
 USER ubuntu
 
 # Clone checks

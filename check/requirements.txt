@@ -1,5 +1,7 @@
-checkpy
+attrs==20.3.0
+checkpy>=0.4.10
+cs50>=9.3.0
 matplotlib
 jupyter
 mypy
-
+flask>=2.2.0
