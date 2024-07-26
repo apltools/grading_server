@@ -6,9 +6,6 @@ ARG DEBIANFRONTEND=noninteractive
 
 RUN apt-get update -qq && apt-get install -y jq
 
-# temporary workaround for check50, rm merged
-RUN pip3 install git+https://github.com/cs50/check50@nullcontext --upgrade
-
 # Install Python packages
 # TODO remove werkzeug after https://github.com/fengsp/flask-session/issues/99 is fixed
 RUN pip3 install \
@@ -25,12 +22,8 @@ RUN pip3 install \
 
 RUN sed -i '/^ubuntu ALL=(ALL) NOPASSWD:ALL$/d' /etc/sudoers
 
-RUN useradd -ms /bin/bash ubuntu
+ENV CHECK50_PATH="~/.local/share/check50"
 
-USER ubuntu
-
-# Clone checks
-ENV CHECK50_PATH  "~/.local/share/check50"
 #############################################################################
 
 USER root
@@ -41,6 +34,9 @@ COPY ./requirements.txt /distro
 
 # Install any needed packages specified in requirements.txt
 RUN python3 -m pip install -r requirements.txt --upgrade
+
+# above pip install trips over attrs's setup.py, installing seperately instead
+RUN python3 -m pip install attrs==20.3.0
 
 # Have ubuntu own checkpy dir
 RUN chown -R ubuntu:ubuntu $(python3 -c "import site; print(site.getsitepackages()[0] + '/checkpy')")

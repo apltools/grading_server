@@ -7,7 +7,6 @@ import schedule
 
 import rq_dashboard
 from flask import Flask, jsonify, request, render_template
-from werkzeug.utils import secure_filename
 
 UPLOAD_FOLDER = './uploads'
 pathlib.Path(UPLOAD_FOLDER).mkdir(parents=True, exist_ok=True)
@@ -144,7 +143,6 @@ def get(id):
         return json_response(id=id, message="job has failed", status="failed", result=result)
 
     return json_response(id=id, message="job is finished", status="finished", result=result)
-
 
 scheduler = schedule.Scheduler(n_workers=4)
 atexit.register(scheduler.__exit__)
