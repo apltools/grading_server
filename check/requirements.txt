@@ -1,8 +1,10 @@
 attrs>=20.3.0
-checkpy>=0.4.10
+checkpy>=2.0
 cs50>=9.3.0
 matplotlib
 jupyter
 mypy
+pycodestyle
+pytest
 flask>=2.2.0
 flake8

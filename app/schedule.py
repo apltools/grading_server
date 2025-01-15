@@ -1,9 +1,7 @@
 import redis
 import rq
-import collections
 import enum
 import subprocess
-import json
 import signal
 
 import work
@@ -50,13 +48,9 @@ class Scheduler:
         """Starts a check50 job. Returns job_id."""
         return self.queue.enqueue(work.check50, slug, filepath, webhook, job_timeout=600).id
 
-    def start_check50v2(self, slug, filepath, webhook):
-        """Starts a check50v2 job. Retrns job_id."""
-        return self.queue.enqueue(work.check50v2, slug, filepath, webhook).id
-
     def start_checkpy(self, repo, args, filepath, webhook):
         """Starts a checkpy job. Returns job_id."""
-        return self.queue.enqueue(work.checkpy, repo, args, filepath, webhook, job_timeout=300).id
+        return self.queue.enqueue(work.checkpy, repo, args, filepath, webhook, job_timeout=600).id
 
     def get(self, id):
         """Get job result. Returns Status and result as parsed json or None."""
@@ -65,8 +59,6 @@ class Scheduler:
 
         # Check if job is in queue
         if job:
-            print(job.status)
-
             if job.status == "finished":
                 return Status.FINISHED, job.result
 
