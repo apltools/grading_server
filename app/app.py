@@ -16,11 +16,12 @@ with open("certs/password.txt") as f:
     PASSWORD = f.read().strip()
 
 app = Flask(__name__)
+app.config.from_object(rq_dashboard.default_settings)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
-rq_dashboard.default_settings.REDIS_HOST = "redis"
-rq_dashboard.default_settings.REDIS_PORT = 6379
-app.config.from_object(rq_dashboard.default_settings)
+app.config["RQ_DASHBOARD_REDIS_URL"] = "redis://redis:6379"
+
+rq_dashboard.web.setup_rq_connection(app)
 app.register_blueprint(rq_dashboard.blueprint, url_prefix="/rq")
 
 

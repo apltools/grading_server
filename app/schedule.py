@@ -59,13 +59,13 @@ class Scheduler:
 
         # Check if job is in queue
         if job:
-            if job.status == "finished":
+            if job.is_finished:
                 return Status.FINISHED, job.result
 
-            if job.status == "failed":
+            if job.is_failed:
                 return Status.FAILED, job.exc_info
 
-            if job.status == "queued":
+            if job.is_queued:
                 ids = self.queue.get_job_ids()
                 return Status.QUEUED, ids.index(id)
 

@@ -1,4 +1,4 @@
-FROM python:3.7-alpine
+FROM python:3.13-alpine
 
 USER root
 
@@ -24,7 +24,11 @@ RUN addgroup -S app_group && adduser -s /bin/sh -D -u 99999 -S app_user -G app_g
 
 # Install docker
 RUN apk add openrc --no-cache
-RUN apk add docker
+# RUN apk add docker
+RUN apk add podman
+
+# Needed for podman run
+RUN apk add iptables
 
 WORKDIR /app
 
@@ -35,7 +39,7 @@ RUN chown -R app_user:app_group /app
 USER app_user
 
 # Add dest of pip to path
-ENV PATH=$PATH:/home/app_user/.local/bin:/home/app_user/.local/lib/python3.7/site-packages
+ENV PATH=$PATH:/home/app_user/.local/bin:/home/app_user/.local/lib/python3.13/site-packages
 
 # Install any needed packages specified in requirements.txt
 RUN python -m pip install -r requirements.txt --user
