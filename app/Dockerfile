@@ -44,6 +44,9 @@ ENV PATH=$PATH:/home/app_user/.local/bin:/home/app_user/.local/lib/python3.13/si
 # Install any needed packages specified in requirements.txt
 RUN python -m pip install -r requirements.txt --user
 
+ENV XDG_RUNTIME_DIR=/run/user/501
+ENV DOCKER_HOST=unix:///run/user/501/podman/podman.sock
+
 USER root
 
 CMD sh boot/init.sh

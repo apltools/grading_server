@@ -7,17 +7,22 @@ services:
       - "443:5000"
     privileged: true
     stdin_open: true
+    userns_mode: "keep-id"
+    pid: "host"
     tty: true
     volumes:
       #- "./app:/app"
       # - "/var/run/docker.sock:/var/run/docker.sock"
-      - "/run/user/501/podman/podman.sock:/var/run/docker.sock"
-      - /var/lib/containers:/var/lib/containers # overlay filesystem fix
+      - "/run/user/501/podman/podman.sock:/run/user/501/podman/podman.sock"
+      - /var/lib/containers:/var/lib/containers:rshared # overlay filesystem fix
       - /dev/fuse:/dev/fuse
       - /dev:/dev
       - /proc:/proc
       - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - /etc/subuid:/etc/subuid:ro
+      - /etc/subgid:/etc/subgid:ro
     environment:
+      - PODMAN_USER=app_user
       - XDG_RUNTIME_DIR=/tmp/xdg
     tmpfs:
       - /run
