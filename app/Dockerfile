@@ -44,8 +44,8 @@ COPY . /app
 # Install any needed packages specified in requirements.txt
 RUN python -m pip install -r requirements.txt
 
-ENV XDG_RUNTIME_DIR=/run/user/501
-ENV DOCKER_HOST=unix:///run/user/501/podman/podman.sock
+ENV XDG_RUNTIME_DIR=/run/user/0
+ENV DOCKER_HOST=unix:///run/user/0/podman/podman.sock
 
 # USER root
 

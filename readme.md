@@ -6,7 +6,15 @@ A simple check50 3.0 grading server build using Flask.
 
 ## Running the server
 
-`docker-compose up`
+`UID=`id -u` podman compose up`
+
+### Mac / Windows
+
+```sh
+podman machine ssh
+echo 'app_user:100000:65536' >> /etc/subuid
+echo 'app_user:100000:65536' >> /etc/subgid
+```
 
 ## Check if the server is running
 

@@ -11,7 +11,7 @@ services:
     pid: "host"
     tty: true
     volumes:
-      - /run/user/501:/run/user/501:rshared # hosts the podman.sock
+      - /run/user/${UID}:/run/user/0:rshared # hosts the podman.sock
     networks:
       - default
 

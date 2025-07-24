@@ -17,4 +17,4 @@ if [ ! -f ./app/certs/password.txt ]; then
 fi
 
 # Build app
-docker-compose -f docker-compose.yml -f docker-compose-check.yml build
+podman compose -f docker-compose.yml -f docker-compose-check.yml build
