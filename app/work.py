@@ -84,7 +84,7 @@ def job(filepath, container_type=CheckContainer):
         with container_type() as container:
             # Copy filepath (zipfile) to container
             process = subprocess.Popen(
-                ["docker", "cp", filepath, f"{container.id}:/home/ubuntu/workspace"],
+                ["podman", f"--url={os.getenv("DOCKER_HOST")}", "cp", filepath, f"{container.id}:/home/ubuntu/workspace"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT)
             process.wait()

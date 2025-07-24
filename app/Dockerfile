@@ -14,16 +14,16 @@ RUN apk add openssl-dev openssl
 
 # move ping (999) to 99, because docker GUID is probably 999
 # https://github.com/willfarrell/docker-crontab/issues/20
-RUN sed -i "s/999/99/" /etc/group
+# RUN sed -i "s/999/99/" /etc/group
 # move 0 to 98, required for OS X
-RUN sed -i "s/0/98/" /etc/group
+# RUN sed -i "s/0/98/" /etc/group
 
 # RUN addgroup -g 999 docker
-RUN addgroup -S app_group && adduser -s /bin/sh -D -u 99999 -S app_user -G app_group
+# RUN addgroup -S app_group && adduser -s /bin/sh -D -u 99999 -S app_user -G app_group
 # RUN addgroup app_user docker
 
 # Install docker
-RUN apk add openrc --no-cache
+# RUN apk add openrc --no-cache
 # RUN apk add docker
 RUN apk add podman
 
@@ -34,19 +34,19 @@ WORKDIR /app
 
 COPY . /app
 
-RUN chown -R app_user:app_group /app
+# RUN chown -R app_user:app_group /app
 
-USER app_user
+# USER app_user
 
 # Add dest of pip to path
-ENV PATH=$PATH:/home/app_user/.local/bin:/home/app_user/.local/lib/python3.13/site-packages
+# ENV PATH=$PATH:/home/app_user/.local/bin:/home/app_user/.local/lib/python3.13/site-packages
 
 # Install any needed packages specified in requirements.txt
-RUN python -m pip install -r requirements.txt --user
+RUN python -m pip install -r requirements.txt
 
 ENV XDG_RUNTIME_DIR=/run/user/501
 ENV DOCKER_HOST=unix:///run/user/501/podman/podman.sock
 
-USER root
+# USER root
 
 CMD sh boot/init.sh
