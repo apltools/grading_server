@@ -2,6 +2,8 @@ files
 files/*
 uploads
 uploads/*
+secrets
+secrets/*
 app/certs
 app/certs/*
 .DS_Store

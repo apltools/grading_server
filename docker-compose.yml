@@ -14,6 +14,8 @@ services:
       - /run/user/${UID}:/run/user/0:rshared # hosts the podman.sock
     networks:
       - default
+    secrets:
+      - app_password
 
   redis:
     image: "redis:alpine"
@@ -26,6 +28,10 @@ services:
 networks:
   default:
     driver: bridge
+
+secrets:
+  app_password:
+    file: secrets/app_password.txt
 
 # CONFIG on host:
 # sudo nano /etc/subgid

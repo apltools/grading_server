@@ -9,11 +9,11 @@ if [ ! -d ./app/certs ]; then
 fi
 
 # Configure a password
-if [ ! -f ./app/certs/password.txt ]; then
+if [ ! -f ./secrets/app_password.txt ]; then
   echo "No password detected, configure a new password:"
   read password
-  touch ./app/certs/password.txt
-  echo "$password" > ./app/certs/password.txt
+  touch ./secrets/app_password.txt
+  echo "$password" > ./secrets/app_password.txt
 fi
 
 # Build app
