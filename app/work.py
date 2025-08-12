@@ -1,11 +1,12 @@
 import docker
 import subprocess
-import json
 import os
 import requests
 import rq
 import contextlib
 import os
+
+from response import create_checkpy_response, create_check50_response
 
 if os.path.exists("certs/gh_auth.txt"): 
     with open("certs/gh_auth.txt") as f:
@@ -36,13 +37,6 @@ class CheckContainer:
         print(f"REMOVED container {self.container.id}")
 
 
-def parse(output):
-    try:
-        return json.loads(output)
-    except:
-        raise JobError(f"Could not parse json crashed, output: {output}")
-
-
 def trigger(webhook, json):
     if webhook:
         try:
@@ -64,7 +58,7 @@ def checkpy(repo, args, filepath, webhook):
                 output = "\n".join(output.split("\n")[i:])
                 break
 
-        json = {"checkpy": parse(output)}
+        json = create_checkpy_response(repo, args, output).to_json()
         trigger(webhook, json)
     return json
 
@@ -72,7 +66,7 @@ def checkpy(repo, args, filepath, webhook):
 def check50(slug, filepath, webhook):
     with job(filepath) as container:
         output = container.exec_run(f"check50 --local -o json -- {slug}").output.decode('utf8')
-        json = {"check50": parse(output)}
+        json = create_check50_response(slug, output).to_json()
         trigger(webhook, json)
     return json
 

@@ -1,5 +1,5 @@
 attrs>=20.3.0
-checkpy>=2.0
+checkpy>=2.1.0
 cs50>=9.3.0
 matplotlib
 jupyter
