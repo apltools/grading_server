@@ -17,7 +17,7 @@ class JobError(Exception):
     pass
 
 class CheckContainer:
-    docker_image = "docker.io/library/grading_server-check"
+    docker_image = "grading_server_check"
 
     def __enter__(self):
         client = docker.from_env()
@@ -84,7 +84,7 @@ def job(filepath, container_type=CheckContainer):
         with container_type() as container:
             # Copy filepath (zipfile) to container
             process = subprocess.Popen(
-                ["podman", f"--url={os.getenv("DOCKER_HOST")}", "cp", filepath, f"{container.id}:/home/ubuntu/workspace"],
+                ["podman", f"--url={os.getenv('DOCKER_HOST')}", "cp", filepath, f"{container.id}:/home/ubuntu/workspace"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT)
             process.wait()

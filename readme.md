@@ -14,6 +14,13 @@ A simple check50 3.0 grading server build using Flask.
 podman machine ssh
 echo 'app_user:100000:65536' >> /etc/subuid
 echo 'app_user:100000:65536' >> /etc/subgid
+systemctl --user enable --now podman.socket
+```
+
+### Linux
+
+```sh
+systemctl --user enable --now podman.socket
 ```
 
 ## Check if the server is running

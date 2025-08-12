@@ -3,6 +3,7 @@ services:
   scheduler:
     build:
       context: ./app
+    image: grading_server_scheduler
     ports:
       - "1024:5000"
     privileged: true
@@ -39,4 +40,4 @@ secrets:
 # sudo nano /etc/subuid
 # => add app_user
  
-# podman --url=unix:///run/user/501/podman/podman.sock ps
+# podman --url=unix:///run/user/0/podman/podman.sock ps

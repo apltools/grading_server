@@ -1,6 +1,7 @@
 version: '3'
 services:
   check:
+    image: grading_server_check
     build:
       context: ./check
     tty: true
