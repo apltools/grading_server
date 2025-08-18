@@ -1,20 +1,12 @@
-# Set up RSA keys
-if [ ! -d ./app/certs ]; then
-  mkdir ./app/certs
-  openssl req -x509 -newkey rsa:4086 \
-    -subj "/C=NL/ST=XXXX/L=XXXX/O=UvA/CN=localhost" \
-    -keyout "./app/certs/priv.pem" \
-    -out "./app/certs/pub.pem" \
-    -days 3650 -nodes -sha256
-fi
-
-# Configure a password
-if [ ! -f ./secrets/app_password.txt ]; then
-  echo "No password detected, configure a new password:"
-  read password
-  touch ./secrets/app_password.txt
-  echo "$password" > ./secrets/app_password.txt
-fi
+# # Set up RSA keys
+# if [ ! -d ./app/certs ]; then
+#   mkdir ./app/certs
+#   openssl req -x509 -newkey rsa:4086 \
+#     -subj "/C=NL/ST=XXXX/L=XXXX/O=UvA/CN=localhost" \
+#     -keyout "./app/certs/priv.pem" \
+#     -out "./app/certs/pub.pem" \
+#     -days 3650 -nodes -sha256
+# fi
 
 # Build app
 podman compose -f docker-compose.yml -f docker-compose-check.yml build

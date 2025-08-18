@@ -28,7 +28,7 @@ networks:
 
 secrets:
   app_password:
-    file: secrets/app_password.txt
+    environment: APP_PASSWORD
 
 # CONFIG on host:
 # sudo nano /etc/subgid

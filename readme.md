@@ -6,7 +6,12 @@ A simple check50 3.0 grading server build using Flask.
 
 ## Running the server
 
-`UID=`id -u` podman compose up`
+Create a .env file with:
+
+  UID=<your_user_id> # id -u
+  APP_PASSWORD=<your_chosen_password>
+
+`podman compose up`
 
 ### Mac / Windows
 
@@ -28,6 +33,7 @@ systemctl --user enable --now podman.socket
 Visit http://localhost:5000 for a demo and http://localhost:5000/rq to check on worker status.
 
 ## Starting a grading job
+
 Send a POST request to `/start/` with a zipfile tagged as `file` and a `slug` like `uva/progik/2018/py/hello` named `slug`. Optionally send a webhook named `webhook`. If the job succeeds, the webhook will be triggered with a POST request and a json payload.
 
 For instance via curl
@@ -45,6 +51,7 @@ The server will respond with a json object like so:
 ```
 
 ## Retrieving results
+
 Send a GET request to `/get/<id>`
 
 For instance via curl
