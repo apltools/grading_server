@@ -11,10 +11,10 @@ class Result:
 
     def to_json(self):
         return {
-            "passed": self.passed,
             "description": self.description,
+            "log": self.log,
             "message": self.message,
-            "log": self.log
+            "passed": self.passed,
         }
 
 @dataclass
@@ -28,16 +28,46 @@ class Response:
 
     def to_json(self):
         return {
-            "results": self.results,
-            "n_tests": self.n_tests,
-            "n_passed": self.n_passed,
-            "tool": self.tool,
-            "args": self.args,
+            "tool": {
+                "name": self.tool,
+                "args": self.args,
+            },
+            "summary": {
+                "total_check_count": self.n_tests,
+                "passed_check_count": self.n_passed,
+            },
+            "checks": self.results,
             "raw": self.raw
         }
 
-def create_check50_response(slug: str, output: str) -> Response:
-    json_output = json.loads(output)
+@dataclass
+class ErrorResponse:
+    tool: str
+    args: dict[str, str]
+    message: str
+    raw: str
+
+    def to_json(self):
+        return {
+            "tool": {
+                "name": self.tool,
+                "args": self.args,
+            },
+            "error": self.message,
+            "raw": self.raw
+        }
+
+
+def create_check50_response(slug: str, output: str) -> Response | ErrorResponse:
+    try:
+        json_output = json.loads(output)
+    except json.JSONDecodeError:
+        return ErrorResponse(
+            tool="check50",
+            args={"slug": slug},
+            message=f"Invalid JSON output from check50:\n{output}",
+            raw=output
+        )
 
     results = get_check50_results(json_output)
 
@@ -58,8 +88,19 @@ def create_check50_response(slug: str, output: str) -> Response:
         raw=output
     )
 
-def create_checkpy_response(repo: str, args: str, output: str) -> Response:
-    json_output = json.loads(output)
+def create_checkpy_response(repo: str, args: str, output: str) -> Response | ErrorResponse:
+    try:
+        json_output = json.loads(output)
+    except json.JSONDecodeError:
+        return ErrorResponse(
+            tool="checkpy",
+            args={
+                "repo": repo,
+                "args": args
+            },
+            message=f"Invalid JSON output from checkpy:\n{output}",
+            raw=output
+        )
 
     results: list[Result] = []
     for check in json_output:
