@@ -9,7 +9,8 @@ A simple check50 3.0 grading server build using Flask.
 Create a .env file with:
 
   UID=<your_user_id> # id -u
-  APP_PASSWORD=<your_chosen_password>
+
+Create a folder `secrets` and then a file `app_password.txt`. In it store your password for running checks.
 
 `podman compose up`
 
