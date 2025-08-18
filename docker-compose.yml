@@ -5,10 +5,9 @@ services:
       context: ./app
     image: grading_server_scheduler
     ports:
-      - "1024:5000"
+      - "8080:5000"
     privileged: true
     stdin_open: true
-    userns_mode: "keep-id"
     pid: "host"
     tty: true
     volumes:
@@ -20,9 +19,6 @@ services:
 
   redis:
     image: "redis:alpine"
-    # https://github.com/docker-library/redis/issues/35
-    sysctls:
-      - net.core.somaxconn=511
     networks:
       - default
 
