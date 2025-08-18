@@ -10,7 +10,10 @@ Create a .env file with:
 
   UID=<your_user_id> # id -u
 
-Create a folder `secrets` and then a file `app_password.txt`. In it store your password for running checks.
+Create a folder `secrets` within that:
+
+* a file `app_password.txt`. In it store your password for running checks.
+* a file `gh_auth.txt`. In it store auth for GitHub in the following format `<gh_username>:<gh_personal_access_token>`. Use a classic token with repo access.
 
 `podman compose up`
 

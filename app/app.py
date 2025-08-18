@@ -12,7 +12,6 @@ UPLOAD_FOLDER = './uploads'
 pathlib.Path(UPLOAD_FOLDER).mkdir(parents=True, exist_ok=True)
 ALLOWED_EXTENSIONS = set(['zip'])
 
-# with open("certs/password.txt") as f:
 with open("/run/secrets/app_password") as f:
     PASSWORD = f.read().strip()
 

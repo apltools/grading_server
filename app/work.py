@@ -8,8 +8,8 @@ import os
 
 from response import create_checkpy_response, create_check50_response
 
-if os.path.exists("certs/gh_auth.txt"): 
-    with open("certs/gh_auth.txt") as f:
+if os.path.exists("/run/secrets/gh_auth"): 
+    with open("/run/secrets/gh_auth") as f:
         GH_AUTH = f.read().strip()
 else:
     GH_AUTH = None

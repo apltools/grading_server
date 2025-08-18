@@ -16,6 +16,7 @@ services:
       - default
     secrets:
       - app_password
+      - gh_auth
 
   redis:
     image: "redis:alpine"
@@ -29,6 +30,8 @@ networks:
 secrets:
   app_password:
     file: secrets/app_password.txt
+  gh_auth:
+    file: secrets/gh_auth.txt
 
 # CONFIG on host:
 # sudo nano /etc/subgid
