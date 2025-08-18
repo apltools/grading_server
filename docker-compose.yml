@@ -28,12 +28,12 @@ networks:
 
 secrets:
   app_password:
-    environment: secrets/app_password.txt
+    file: secrets/app_password.txt
 
 # CONFIG on host:
 # sudo nano /etc/subgid
 # => add app_user
 # sudo nano /etc/subuid
 # => add app_user
- 
+
 # podman --url=unix:///run/user/0/podman/podman.sock ps
