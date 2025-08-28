@@ -38,7 +38,7 @@ class Response:
                 "total_check_count": self.n_tests,
                 "passed_check_count": self.n_passed,
             },
-            "checks": self.results,
+            "checks": [r.to_json() for r in self.results],
             "raw": self.raw
         }
 

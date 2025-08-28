@@ -2,6 +2,8 @@ FROM cs50/cli
 ##############################cs50/check#####################################
 USER root
 
+RUN useradd -m -s /bin/bash ubuntu
+
 ARG DEBIANFRONTEND=noninteractive
 
 RUN apt-get update -qq && apt-get install -y jq
