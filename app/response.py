@@ -2,9 +2,11 @@ import json
 
 from dataclasses import dataclass
 
+from typing import Union
+
 @dataclass
 class Result:
-    passed: bool | None
+    passed: Union[bool, None]
     description: str
     message: str = ""
     log: str = ""
@@ -58,7 +60,7 @@ class ErrorResponse:
         }
 
 
-def create_check50_response(slug: str, output: str) -> Response | ErrorResponse:
+def create_check50_response(slug: str, output: str) -> Union[Response, ErrorResponse]:
     try:
         json_output = json.loads(output)
     except json.JSONDecodeError:
@@ -88,7 +90,7 @@ def create_check50_response(slug: str, output: str) -> Response | ErrorResponse:
         raw=output
     )
 
-def create_checkpy_response(repo: str, args: str, output: str) -> Response | ErrorResponse:
+def create_checkpy_response(repo: str, args: str, output: str) -> Union[Response, ErrorResponse]:
     try:
         json_output = json.loads(output)
     except json.JSONDecodeError:
