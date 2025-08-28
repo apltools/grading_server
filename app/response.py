@@ -2,7 +2,7 @@ import json
 
 from dataclasses import dataclass
 
-from typing import Union
+from typing import Union, List, Dict
 
 @dataclass
 class Result:
@@ -21,11 +21,11 @@ class Result:
 
 @dataclass
 class Response:
-    results: list[Result]
+    results: List[Result]
     n_tests: int
     n_passed: int
     tool: str
-    args: dict[str, str]
+    args: Dict[str, str]
     raw: str
 
     def to_json(self):
@@ -45,7 +45,7 @@ class Response:
 @dataclass
 class ErrorResponse:
     tool: str
-    args: dict[str, str]
+    args: Dict[str, str]
     message: str
     raw: str
 
@@ -104,7 +104,7 @@ def create_checkpy_response(repo: str, args: str, output: str) -> Union[Response
             raw=output
         )
 
-    results: list[Result] = []
+    results: List[Result] = []
     for check in json_output:
         results += get_checkpy_results(check)
 
@@ -128,8 +128,8 @@ def create_checkpy_response(repo: str, args: str, output: str) -> Union[Response
         raw=output
     )
 
-def get_check50_results(check: dict) -> list[Result]:
-    check50_results: list[Result] = []
+def get_check50_results(check: dict) -> List[Result]:
+    check50_results: List[Result] = []
     for result in check["results"]:
         descr: str = result["description"]
 
@@ -158,8 +158,8 @@ def get_check50_results(check: dict) -> list[Result]:
     
     return check50_results
 
-def get_checkpy_results(check: dict) -> list[Result]:
-    checkpy_results: list[Result] = []
+def get_checkpy_results(check: dict) -> List[Result]:
+    checkpy_results: List[Result] = []
     for result in check["results"]:
         descr: str = result["description"]
 
