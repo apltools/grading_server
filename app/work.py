@@ -19,7 +19,7 @@ class JobError(Exception):
     pass
 
 class CheckContainer:
-    docker_image = "grading_server-check"
+    docker_image = "grading_server_check"
 
     def __enter__(self):
         client = docker.from_env()
