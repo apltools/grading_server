@@ -7,6 +7,8 @@ import rq
 import contextlib
 import os
 
+from response import create_checkpy_response, create_check50_response
+
 if os.path.exists("certs/gh_auth.txt"): 
     with open("certs/gh_auth.txt") as f:
         GH_AUTH = f.read().strip()
@@ -50,7 +52,6 @@ def trigger(webhook, json):
         except requests.exceptions.ConnectionError:
             raise JobError(f"Could not trigger webhook: {webhook}, connection refused")
 
-
 def checkpy(repo, args, filepath, webhook):
     gh_auth = f"--gh-auth {GH_AUTH}" if GH_AUTH else ""
     with job(filepath) as container:
@@ -64,7 +65,7 @@ def checkpy(repo, args, filepath, webhook):
                 output = "\n".join(output.split("\n")[i:])
                 break
 
-        json = {"checkpy": parse(output)}
+        json = create_checkpy_response(repo, args, output).to_json()
         trigger(webhook, json)
     return json
 
@@ -72,10 +73,9 @@ def checkpy(repo, args, filepath, webhook):
 def check50(slug, filepath, webhook):
     with job(filepath) as container:
         output = container.exec_run(f"check50 --local -o json -- {slug}").output.decode('utf8')
-        json = {"check50": parse(output)}
+        json = create_check50_response(slug, output).to_json()
         trigger(webhook, json)
     return json
-
 
 @contextlib.contextmanager
 def job(filepath, container_type=CheckContainer):
