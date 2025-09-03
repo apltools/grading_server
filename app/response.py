@@ -25,7 +25,7 @@ class Run:
     def to_json(self):
         return {
             "name": self.name,
-            "results": [r.to_json() for r in self.results]
+            "checks": [r.to_json() for r in self.results]
         }
 
 @dataclass
@@ -81,7 +81,7 @@ def create_check50_response(slug: str, output: str) -> Response | ErrorResponse:
         )
 
     results = get_check50_results(json_output)
-    
+
     run = Run(name=slug, results=results)
 
     n_tests = len(json_output["results"])
