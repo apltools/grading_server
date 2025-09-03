@@ -18,8 +18,19 @@ class Result:
         }
 
 @dataclass
-class Response:
+class Run:
+    name: str
     results: list[Result]
+
+    def to_json(self):
+        return {
+            "name": self.name,
+            "results": [r.to_json() for r in self.results]
+        }
+
+@dataclass
+class Response:
+    runs: list[Run]
     n_tests: int
     n_passed: int
     tool: str
@@ -36,7 +47,7 @@ class Response:
                 "total_check_count": self.n_tests,
                 "passed_check_count": self.n_passed,
             },
-            "checks": [r.to_json() for r in self.results],
+            "runs": [r.to_json() for r in self.runs],
             "raw": self.raw
         }
 
@@ -70,6 +81,8 @@ def create_check50_response(slug: str, output: str) -> Response | ErrorResponse:
         )
 
     results = get_check50_results(json_output)
+    
+    run = Run(name=slug, results=results)
 
     n_tests = len(json_output["results"])
 
@@ -78,7 +91,7 @@ def create_check50_response(slug: str, output: str) -> Response | ErrorResponse:
         n_passed += 1 if result["passed"] else 0
 
     return Response(
-        results=results,
+        runs=[run],
         n_tests=n_tests,
         n_passed=n_passed,
         tool="check50",
@@ -102,20 +115,23 @@ def create_checkpy_response(repo: str, args: str, output: str) -> Response | Err
             raw=output
         )
 
-    results: list[Result] = []
-    for check in json_output:
-        results += get_checkpy_results(check)
+    runs: list[Run] = []
+    for run in json_output:
+        runs.append(Run(
+            name=run["name"],
+            results=get_checkpy_results(run)
+        ))
 
     n_tests = 0
-    for check in json_output:
-        n_tests += check["nTests"]
+    for run in json_output:
+        n_tests += run["nTests"]
 
     n_passed = 0
-    for check in json_output:
-        n_passed += check["nPassed"]
+    for run in json_output:
+        n_passed += run["nPassed"]
 
     return Response(
-        results=results,
+        runs=runs,
         n_tests=n_tests,
         n_passed=n_passed,
         tool="checkpy",
