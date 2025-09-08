@@ -14,12 +14,14 @@ services:
       - /run/user/${UID}:/run/user/0:rshared # hosts the podman.sock
     networks:
       - default
+    restart: always
     secrets:
       - app_password
       - gh_auth
 
   redis:
     image: "redis:alpine"
+    restart: always
     networks:
       - default
 
