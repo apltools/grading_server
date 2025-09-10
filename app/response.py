@@ -9,6 +9,17 @@ class Result:
     message: str = ""
     log: str = ""
 
+    MAX_LOG_LENGTH = 10000
+
+    def __post_init__(self):
+        if len(self.log) > self.MAX_LOG_LENGTH:
+            self.log = (
+                "Too Long Truncated Log:\n"
+                + self.log[:self.MAX_LOG_LENGTH//2]
+                + "\n...\n"
+                + self.log[-self.MAX_LOG_LENGTH//2:]
+            )
+
     def to_json(self):
         return {
             "description": self.description,
@@ -36,6 +47,31 @@ class Response:
     tool: str
     args: dict[str, str]
     raw: str
+
+    MAX_FIELD_LENGTH = 10000
+
+    @staticmethod
+    def _remove_long_strings(obj, max_len=10_000):
+        if isinstance(obj, dict):
+            return {k: Response._remove_long_strings(v, max_len) for k, v in obj.items()}
+
+        if isinstance(obj, list):
+            return [Response._remove_long_strings(v, max_len) for v in obj]
+
+        if isinstance(obj, str):
+            if len(obj) <= max_len:
+                return obj
+
+            return (
+                f"Truncated (length > {max_len})\n"
+                + obj[:max_len]
+            )
+
+        return obj
+
+    def __post_init__(self):
+        parsed_json = json.loads(self.raw)
+        self.raw = str(Response._remove_long_strings(parsed_json, self.MAX_FIELD_LENGTH))
 
     def to_json(self):
         return {
