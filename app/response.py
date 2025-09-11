@@ -1,4 +1,5 @@
 import json
+import re
 
 from dataclasses import dataclass
 
@@ -87,12 +88,18 @@ class Response:
             "raw": self.raw
         }
 
+
 @dataclass
 class ErrorResponse:
     tool: str
     args: dict[str, str]
     message: str
     raw: str
+
+    MAX_FIELD_LENGTH = 10000
+
+    def __post_init__(self):
+        self.raw = self.raw[:ErrorResponse.MAX_FIELD_LENGTH]
 
     def to_json(self):
         return {
@@ -151,6 +158,14 @@ def create_checkpy_response(repo: str, args: str, output: str) -> Response | Err
             raw=output
         )
 
+    n_tests = 0
+    for run in json_output:
+        n_tests += run["nTests"]
+
+    # n_tests is 0 if any nTests == 0 (Timeout reached)
+    if any(run["nTests"] == 0 for run in json_output):
+        n_tests = 0
+
     runs: list[Run] = []
     for run in json_output:
         runs.append(Run(
@@ -158,13 +173,13 @@ def create_checkpy_response(repo: str, args: str, output: str) -> Response | Err
             results=get_checkpy_results(run)
         ))
 
-    n_tests = 0
-    for run in json_output:
-        n_tests += run["nTests"]
-
     n_passed = 0
     for run in json_output:
         n_passed += run["nPassed"]
+
+    # n_passed is 0 if any nPassed == 0 (Timeout reached)
+    if any(run["nPassed"] == 0 for run in json_output):
+        n_passed = 0
 
     return Response(
         runs=runs,
@@ -209,6 +224,14 @@ def get_check50_results(check: dict) -> list[Result]:
     return check50_results
 
 def get_checkpy_results(check: dict) -> list[Result]:
+    if check["nTests"] == 0:
+        return [Result(
+            passed=None,
+            description=re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', check["output"][0]),
+            message="",
+            log=""
+        )]
+
     checkpy_results: list[Result] = []
     for result in check["results"]:
         descr: str = result["description"]
