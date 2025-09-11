@@ -1,2 +1,2 @@
 cd /app
-uwsgi --ini uwsgi.ini
+supervisord -c /etc/supervisor.d/supervisord.conf -n

@@ -5,6 +5,9 @@ USER root
 # Install gcc and python dev headers
 RUN apk add python3-dev build-base linux-headers pcre-dev
 
+# Install supervisor
+RUN apk add --no-cache supervisor gcc musl-dev
+
 # Install openssl
 RUN apk add openssl-dev openssl
 
@@ -48,5 +51,9 @@ ENV XDG_RUNTIME_DIR=/run/user/0
 ENV DOCKER_HOST=unix:///run/user/0/podman/podman.sock
 
 # USER root
+
+# Add supervisor config
+RUN mkdir -p /etc/supervisor.d
+COPY supervisord.conf /etc/supervisor.d/supervisord.conf
 
 CMD sh boot/init.sh

@@ -1,7 +1,6 @@
 import os
 import uuid
 import pathlib
-import atexit
 
 import schedule
 
@@ -145,9 +144,7 @@ def get(id):
 
     return json_response(id=id, message="job is finished", status="finished", result=result)
 
-scheduler = schedule.Scheduler(n_workers=4)
-atexit.register(scheduler.__exit__)
-scheduler.__enter__()
+scheduler = schedule.Scheduler()
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
