@@ -210,6 +210,9 @@ def get_check50_results(check: dict) -> list[Result]:
         if result.get("cause") is not None:
             message = result["cause"]["rationale"]
 
+            if result["cause"].get("help") is not None:
+                message += "    \n" + result["cause"]["help"]
+
         log = ""
         if "log" in result:
             log = "\n".join(result["log"])
