@@ -22,6 +22,12 @@ a {
   color: #0b5fa5;
 }
 
+.hint {
+  margin: -0.5rem 0 1rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
 /* One card per tool, side by side, wrapping as tools are added */
 .tools {
   display: flex;

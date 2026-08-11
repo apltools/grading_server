@@ -146,7 +146,7 @@ podman --url=unix:///run/user/0/podman/podman.sock ps
 
 ## Starting a grading job
 
-There are two endpoints, one per grading tool. Both take a zipfile of the submission tagged as `file`, and the `password` from `secrets/app_password.txt`. Both also accept an optional `webhook`: if the job succeeds, the webhook is triggered with a POST request whose json payload is `{"id": <job_id>, "result": <the result below>}`.
+There are two endpoints, one per grading tool. Both take the submission tagged as `file`, and the `password` from `secrets/app_password.txt`. `file` is normally a zipfile; send a single loose file instead and the server zips it for you, keeping its name, which is handy for trying something out quickly. Both also accept an optional `webhook`: if the job succeeds, the webhook is triggered with a POST request whose json payload is `{"id": <job_id>, "result": <the result below>}`.
 
 ### check50
 

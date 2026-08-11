@@ -5,6 +5,7 @@ import uuid
 import pathlib
 
 import schedule
+import submission
 import tools
 
 import rq_dashboard
@@ -27,7 +28,7 @@ rq_dashboard.web.setup_rq_connection(app)
 app.register_blueprint(rq_dashboard.blueprint, url_prefix="/rq")
 
 
-def allowed_file(filename):
+def is_zipfile(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
@@ -58,17 +59,28 @@ def form_field(name):
 
 
 def save_upload():
-    """Store the uploaded zipfile under a unique name. Returns its path."""
-    if "file" not in request.files:
+    """Store the submission as a zipfile under a unique name. Returns its path.
+
+    A submission is graded by unzipping it in the check container, so anything
+    that is not a zipfile is zipped here. That way a single loose file, like the
+    hello.py you would drop into the form to try something out, just works.
+    """
+    if "file" not in request.files or not request.files["file"].filename:
         raise InvalidRequest("no 'file' received, be sure to use the tag 'file'")
 
     file = request.files["file"]
 
-    if not allowed_file(file.filename):
-        raise InvalidRequest(f"file not allowed, accepting only {', '.join(ALLOWED_EXTENSIONS)}")
-
     filepath = os.path.abspath(os.path.join(app.config['UPLOAD_FOLDER'], f"{uuid.uuid4()}.zip"))
-    file.save(filepath)
+
+    if is_zipfile(file.filename):
+        file.save(filepath)
+        return filepath
+
+    try:
+        submission.zip_into(filepath, file.filename, file.read())
+    except ValueError as error:
+        raise InvalidRequest(str(error))
+
     return filepath
 
 
