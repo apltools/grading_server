@@ -11,23 +11,7 @@ RUN apk add --no-cache supervisor gcc musl-dev
 # Install openssl
 RUN apk add openssl-dev openssl
 
-# Add user without password (-D), give it UID 99999 and name it app_user
-# RUN stat -c '%g' /var/run/docker.sock
-# RUN addgroup -g 999 docker
-
-# move ping (999) to 99, because docker GUID is probably 999
-# https://github.com/willfarrell/docker-crontab/issues/20
-# RUN sed -i "s/999/99/" /etc/group
-# move 0 to 98, required for OS X
-# RUN sed -i "s/0/98/" /etc/group
-
-# RUN addgroup -g 999 docker
-# RUN addgroup -S app_group && adduser -s /bin/sh -D -u 99999 -S app_user -G app_group
-# RUN addgroup app_user docker
-
-# Install docker
-# RUN apk add openrc --no-cache
-# RUN apk add docker
+# Install podman, to run the check container
 RUN apk add podman
 
 # Needed for podman run
@@ -35,22 +19,15 @@ RUN apk add iptables
 
 WORKDIR /app
 
-COPY . /app
-
-# RUN chown -R app_user:app_group /app
-
-# USER app_user
-
-# Add dest of pip to path
-# ENV PATH=$PATH:/home/app_user/.local/bin:/home/app_user/.local/lib/python3.13/site-packages
-
-# Install any needed packages specified in requirements.txt
+# Install any needed packages specified in requirements.txt, before copying the
+# app itself, so that editing a template does not invalidate the install
+COPY requirements.txt /app
 RUN python -m pip install -r requirements.txt
+
+COPY . /app
 
 ENV XDG_RUNTIME_DIR=/run/user/0
 ENV DOCKER_HOST=unix:///run/user/0/podman/podman.sock
-
-# USER root
 
 # Add supervisor config
 RUN mkdir -p /etc/supervisor.d

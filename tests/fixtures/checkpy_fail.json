@@ -1,0 +1,30 @@
+[
+    {
+        "name": "hello.py",
+        "nTests": 2,
+        "nPassed": 1,
+        "nFailed": 1,
+        "nRun": 2,
+        "output": [
+            "\u001b[96mTesting: hello.py\u001b[0m",
+            "\u001b[92m:) prints exactly 1 line of output\u001b[0m",
+            "\u001b[91m:( prints \"Hello, world!\"\u001b[0m\n   assert 'Hello, world!\\n' == 'nope\\n'\n     - Hello, world!\n     + nope"
+        ],
+        "results": [
+            {
+                "passed": true,
+                "description": "prints exactly 1 line of output",
+                "message": "",
+                "exception": "None",
+                "output": "nope\n"
+            },
+            {
+                "passed": false,
+                "description": "prints \"Hello, world!\"",
+                "message": "assert 'Hello, world!\\n' == 'nope\\n'\n  - Hello, world!\n  + nope",
+                "exception": "None",
+                "output": "nope\n"
+            }
+        ]
+    }
+]

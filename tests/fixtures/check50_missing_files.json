@@ -1,0 +1,25 @@
+{
+    "slug": "cs50/problems/2024/x/sentimental/hello",
+    "error": {
+        "type": "MissingFilesError",
+        "value": "You seem to be missing these required files:\nhello.py\nYou are currently in: /home/ubuntu/workspace, did you perhaps intend another directory?",
+        "traceback": [
+            "Traceback (most recent call last):\n",
+            "  File \"/opt/venv/bin/check50\", line 10, in <module>\n    sys.exit(main())\n             ~~~~^^\n",
+            "  File \"/opt/venv/lib/python3.14/site-packages/check50/__main__.py\", line 393, in main\n    included_files = lib50.files(config.get(\"files\"))[0]\n                     ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n",
+            "  File \"/opt/venv/lib/python3.14/site-packages/lib50/_api.py\", line 317, in files\n    raise MissingFilesError(missing_files)\n",
+            "lib50._errors.MissingFilesError: You seem to be missing these required files:\nhello.py\nYou are currently in: /home/ubuntu/workspace, did you perhaps intend another directory?\n"
+        ],
+        "actions": {
+            "show_traceback": false,
+            "message": "You seem to be missing these required files:\nhello.py\nYou are currently in: /home/ubuntu/workspace, did you perhaps intend another directory?"
+        },
+        "data": {
+            "files": [
+                "hello.py"
+            ],
+            "dir": "/home/ubuntu/workspace"
+        }
+    },
+    "version": "3.4.0"
+}

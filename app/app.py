@@ -1,3 +1,5 @@
+import functools
+import hmac
 import os
 import uuid
 import pathlib
@@ -32,97 +34,76 @@ def json_response(message="", status=None, id=None, result=None):
     return jsonify(id=id, status=status, message=message, result=result)
 
 
+def requires_password(route):
+    """Refuse the request unless it carries the password from secrets/app_password.txt."""
+    @functools.wraps(route)
+    def wrapper(*args, **kwargs):
+        password = request.form.get("password", "")
+        if not hmac.compare_digest(password, PASSWORD):
+            return "incorrect password", 400
+        return route(*args, **kwargs)
+    return wrapper
+
+
+class InvalidRequest(Exception):
+    """The request is missing something, or sent something we cannot grade."""
+
+
+def form_field(name):
+    """The value of a required form field."""
+    if not request.form.get(name):
+        raise InvalidRequest(f"no '{name}' received, be sure to use the tag '{name}'")
+    return request.form[name]
+
+
+def save_upload():
+    """Store the uploaded zipfile under a unique name. Returns its path."""
+    if "file" not in request.files:
+        raise InvalidRequest("no 'file' received, be sure to use the tag 'file'")
+
+    file = request.files["file"]
+
+    if not allowed_file(file.filename):
+        raise InvalidRequest(f"file not allowed, accepting only {', '.join(ALLOWED_EXTENSIONS)}")
+
+    filepath = os.path.abspath(os.path.join(app.config['UPLOAD_FOLDER'], f"{uuid.uuid4()}.zip"))
+    file.save(filepath)
+    return filepath
+
+
+@app.errorhandler(InvalidRequest)
+def invalid_request(error):
+    return str(error), 400
+
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
 
 @app.route("/checkpy", methods=["POST"])
+@requires_password
 def checkpy():
-    # Ensure password is correct
-    password = request.form["password"]
-    if password != PASSWORD:
-        return "incorrect password", 400
+    repo = form_field("repo")
+    args = form_field("args")
+    filepath = save_upload()
+    webhook = request.form.get("webhook") or None
 
-    # Ensure args exists
-    if "args" not in request.form or not request.form["args"]:
-        return "no 'args' received, be sure to use the tag 'args'", 400
-
-    args = request.form["args"]
-
-    # Ensure repo exists
-    if "repo" not in request.form or not request.form["repo"]:
-        return "no 'repo' received, be sure to use the tag 'repo'", 400
-
-    repo = request.form["repo"]
-
-    # Ensure file exists
-    if "file" not in request.files:
-        return "no 'file' received, be sure to use the tag 'file'", 400
-
-    file = request.files["file"]
-
-    # Ensure file is a .zip (allowed)
-    if not allowed_file(file.filename):
-        return f"file not allowed, accepting only {', '.join(ALLOWED_EXTENSIONS)}", 400
-
-    # Name file after id
-    id = str(uuid.uuid4())
-    filename = f"{id}.zip"
-
-    # Store file on disk
-    filepath = os.path.abspath(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    file.save(filepath)
-
-    # Get optional webhook
-    webhook = request.form["webhook"] if "webhook" in request.form else None
-
-    # Start checkpy
     job_id = scheduler.start_checkpy(repo, args, filepath, webhook)
 
-    # Communicate id
     return json_response(id=job_id, message="use /get/<id> to get results")
 
 
 @app.route("/check50", methods=["POST"])
 @app.route("/check50v3", methods=["POST"])
+@requires_password
 def check50():
-    # Ensure password is correct
-    password = request.form["password"]
-    if password != PASSWORD:
-        return "incorrect password", 400
-
-    # Ensure slug exists
-    if "slug" not in request.form or not request.form["slug"]:
-        return "no 'slug' received, be sure to use the tag 'slug'", 400
-
-    slug = request.form["slug"]
-
-    # Ensure file exists
-    if "file" not in request.files:
-        return "no 'file' received, be sure to use the tag 'file'", 400
-
-    file = request.files["file"]
-
-    # Ensure file is a .zip (allowed)
-    if not allowed_file(file.filename):
-        return f"file not allowed, accepting only {', '.join(ALLOWED_EXTENSIONS)}", 400
-
-    # Name file after id
-    id = str(uuid.uuid4())
-    filename = f"{id}.zip"
-
-    # Store file on disk
-    filepath = os.path.abspath(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-    file.save(filepath)
-
-    # Get optional webhook
+    slug = form_field("slug")
+    filepath = save_upload()
     webhook = request.form.get("webhook") or None
 
-    # Start check50
     job_id = scheduler.start_check50(slug, filepath, webhook)
 
-    # Communicate id
     return json_response(id=job_id, message="use /get/<id> to get results")
 
 

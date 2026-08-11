@@ -123,6 +123,18 @@ def create_check50_response(slug: str, output: str) -> Response | ErrorResponse:
             raw=output
         )
 
+    # check50 reports an error instead of results when it could not run at all,
+    # like when the submission is missing a required file
+    if "results" not in json_output:
+        error = json_output.get("error", {})
+        message = error.get("value") or "check50 produced no results"
+        return ErrorResponse(
+            tool="check50",
+            args={"slug": slug},
+            message=f"check50 failed: {message}",
+            raw=output
+        )
+
     results = get_check50_results(json_output)
 
     run = Run(name=slug, results=results)

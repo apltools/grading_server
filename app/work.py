@@ -1,10 +1,10 @@
-import docker
-import subprocess
-import os
-import requests
-import rq
 import contextlib
 import os
+import subprocess
+
+import docker
+import requests
+import rq
 
 from response import create_checkpy_response, create_check50_response
 
@@ -37,10 +37,10 @@ class CheckContainer:
         print(f"REMOVED container {self.container.id}")
 
 
-def trigger(webhook, json):
+def trigger(webhook, result):
     if webhook:
         try:
-            requests.post(webhook, json={"id":rq.get_current_job().id, "result":json})
+            requests.post(webhook, json={"id":rq.get_current_job().id, "result":result})
         except requests.exceptions.ConnectionError:
             raise JobError(f"Could not trigger webhook: {webhook}, connection refused")
 
@@ -58,17 +58,17 @@ def checkpy(repo, args, filepath, webhook):
                 output = "\n".join(output.split("\n")[i:])
                 break
 
-        json = create_checkpy_response(repo, args, output).to_json()
-        trigger(webhook, json)
-    return json
+        result = create_checkpy_response(repo, args, output).to_json()
+        trigger(webhook, result)
+    return result
 
 
 def check50(slug, filepath, webhook):
     with job(filepath) as container:
         output = container.exec_run(f"check50 --local -o json -- {slug}").output.decode('utf8')
-        json = create_check50_response(slug, output).to_json()
-        trigger(webhook, json)
-    return json
+        result = create_check50_response(slug, output).to_json()
+        trigger(webhook, result)
+    return result
 
 
 @contextlib.contextmanager
@@ -77,11 +77,15 @@ def job(filepath, container_type=CheckContainer):
         # In check container
         with container_type() as container:
             # Copy filepath (zipfile) to container
-            process = subprocess.Popen(
+            copy = subprocess.run(
                 ["podman", f"--url={os.getenv('DOCKER_HOST')}", "cp", filepath, f"{container.id}:/home/ubuntu/workspace"],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT)
-            process.wait()
+
+            # Without the submission there is nothing to grade, and the checks
+            # would fail with a confusing "file not found" instead
+            if copy.returncode != 0:
+                raise JobError(f"Could not copy {filepath} to container: {copy.stdout.decode('utf8')}")
 
             # Unzip and remove
             container.exec_run(f"unzip {os.path.basename(filepath)}")

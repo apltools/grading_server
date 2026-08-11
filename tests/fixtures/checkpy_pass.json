@@ -1,0 +1,30 @@
+[
+    {
+        "name": "hello.py",
+        "nTests": 2,
+        "nPassed": 2,
+        "nFailed": 0,
+        "nRun": 2,
+        "output": [
+            "\u001b[96mTesting: hello.py\u001b[0m",
+            "\u001b[92m:) prints exactly 1 line of output\u001b[0m",
+            "\u001b[92m:) prints \"Hello, world!\"\u001b[0m"
+        ],
+        "results": [
+            {
+                "passed": true,
+                "description": "prints exactly 1 line of output",
+                "message": "",
+                "exception": "None",
+                "output": "Hello, world!\n"
+            },
+            {
+                "passed": true,
+                "description": "prints \"Hello, world!\"",
+                "message": "",
+                "exception": "None",
+                "output": "Hello, world!\n"
+            }
+        ]
+    }
+]

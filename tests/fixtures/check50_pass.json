@@ -1,0 +1,43 @@
+{
+    "slug": "cs50/problems/2024/x/sentimental/hello",
+    "results": [
+        {
+            "name": "exists",
+            "description": "hello.py exists.",
+            "passed": true,
+            "log": [
+                "checking that hello.py exists..."
+            ],
+            "cause": null,
+            "data": {},
+            "dependency": null
+        },
+        {
+            "name": "veronica",
+            "description": "responds to name Emma.",
+            "passed": true,
+            "log": [
+                "running python3 hello.py...",
+                "sending input Emma...",
+                "checking for output \"Emma\"..."
+            ],
+            "cause": null,
+            "data": {},
+            "dependency": "exists"
+        },
+        {
+            "name": "brian",
+            "description": "responds to name Rodrigo.",
+            "passed": true,
+            "log": [
+                "running python3 hello.py...",
+                "sending input Rodrigo...",
+                "checking for output \"Rodrigo\"..."
+            ],
+            "cause": null,
+            "data": {},
+            "dependency": "exists"
+        }
+    ],
+    "version": "3.4.0"
+}

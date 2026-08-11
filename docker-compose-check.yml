@@ -1,4 +1,3 @@
-version: '3'
 services:
   check:
     image: grading_server_check

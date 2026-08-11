@@ -1,0 +1,4 @@
+[tool.pytest.ini_options]
+# the app is not a package, it is copied to /app in the image and imported flat
+pythonpath = ["app"]
+testpaths = ["tests"]
