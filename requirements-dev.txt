@@ -1,4 +1,7 @@
 # Test only dependencies, not installed into the app image.
 # Run the suite with: pytest
 pytest==9.1.1
+
+# helpers.py is built on these, the app's own pins
+Flask==3.1.1
 Werkzeug==3.1.3

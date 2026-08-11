@@ -1,19 +1,15 @@
-import functools
-import hmac
-import os
-import uuid
 import pathlib
 
 import schedule
-import submission
 import tools
 
 import rq_dashboard
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, request, render_template
+
+from helpers import InvalidRequest, form_field, json_response, requires_password, save_upload
 
 UPLOAD_FOLDER = './uploads'
 pathlib.Path(UPLOAD_FOLDER).mkdir(parents=True, exist_ok=True)
-ALLOWED_EXTENSIONS = set(['zip'])
 
 with open("/run/secrets/app_password") as f:
     PASSWORD = f.read().strip()
@@ -28,60 +24,8 @@ rq_dashboard.web.setup_rq_connection(app)
 app.register_blueprint(rq_dashboard.blueprint, url_prefix="/rq")
 
 
-def is_zipfile(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
-def json_response(message="", status=None, id=None, result=None):
-    return jsonify(id=id, status=status, message=message, result=result)
-
-
-def requires_password(route):
-    """Refuse the request unless it carries the password from secrets/app_password.txt."""
-    @functools.wraps(route)
-    def wrapper(*args, **kwargs):
-        password = request.form.get("password", "")
-        if not hmac.compare_digest(password, PASSWORD):
-            return "incorrect password", 400
-        return route(*args, **kwargs)
-    return wrapper
-
-
-class InvalidRequest(Exception):
-    """The request is missing something, or sent something we cannot grade."""
-
-
-def form_field(name):
-    """The value of a required form field."""
-    if not request.form.get(name):
-        raise InvalidRequest(f"no '{name}' received, be sure to use the tag '{name}'")
-    return request.form[name]
-
-
-def save_upload():
-    """Store the submission as a zipfile under a unique name. Returns its path.
-
-    A submission is graded by unzipping it in the check container, so anything
-    that is not a zipfile is zipped here. That way a single loose file, like the
-    hello.py you would drop into the form to try something out, just works.
-    """
-    if "file" not in request.files or not request.files["file"].filename:
-        raise InvalidRequest("no 'file' received, be sure to use the tag 'file'")
-
-    file = request.files["file"]
-
-    filepath = os.path.abspath(os.path.join(app.config['UPLOAD_FOLDER'], f"{uuid.uuid4()}.zip"))
-
-    if is_zipfile(file.filename):
-        file.save(filepath)
-        return filepath
-
-    try:
-        submission.zip_into(filepath, file.filename, file.read())
-    except ValueError as error:
-        raise InvalidRequest(str(error))
-
-    return filepath
+# Every grading endpoint is protected with the one shared password
+password_required = requires_password(PASSWORD)
 
 
 @app.errorhandler(InvalidRequest)
@@ -96,10 +40,10 @@ def index():
 
 def grade(tool):
     """The POST endpoint of a single grading tool."""
-    @requires_password
+    @password_required
     def view():
         args = {name: form_field(name) for name in tool.fields}
-        filepath = save_upload()
+        filepath = save_upload(app.config['UPLOAD_FOLDER'])
         webhook = request.form.get("webhook") or None
 
         job_id = scheduler.start(tool.name, args, filepath, webhook)
