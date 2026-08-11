@@ -310,7 +310,7 @@ MYTOOL = Tool(
 TOOLS = {tool.name: tool for tool in (CHECK50, CHECKPY, MYTOOL)}
 ```
 
-That is the whole wiring: the endpoint, the password check, the `file` upload, the optional `webhook`, the queueing and the `/get/<id>` plumbing are shared.
+That is the whole wiring: the endpoint, the password check, the `file` upload, the optional `webhook`, the queueing, the `/get/<id>` plumbing **and the form on the demo page** all follow from this entry. `placeholders` is optional and only affects that form; a field without one shows its own name.
 
 Things to know about `run`:
 
@@ -331,11 +331,9 @@ curl -F 'file=@hello.zip' \
      localhost:8080/mytool
 ```
 
+The demo page on <http://localhost:8080> now has a `mytool` form too, generated from the entry — [app/templates/index.html](app/templates/index.html) loops over the registry and [app/static/script.js](app/static/script.js) wires up whatever forms it finds, so neither file needs editing.
+
 Jobs are queued by tool name, so let the queue drain before deploying a change that renames or removes a tool — an in-flight job naming a tool that no longer exists will fail.
-
-### 5. Optionally, add it to the demo page
-
-[app/templates/index.html](app/templates/index.html) holds one form per tool, wired up in [app/static/script.js](app/static/script.js) with `post($("#mytool_form"), "/mytool")`.
 
 ## Running the tests
 

@@ -38,6 +38,9 @@ class Tool:
     # additional routes serving this same tool
     aliases: tuple[str, ...] = field(default_factory=tuple)
 
+    # nicer wording for a field in the demo form, defaults to the field name
+    placeholders: dict[str, str] = field(default_factory=dict)
+
 
 def run_check50(container, args):
     return container.exec_run(f"check50 --local -o json -- {args['slug']}").output.decode('utf8')
@@ -73,6 +76,7 @@ CHECKPY = Tool(
     fields=("repo", "args"),
     run=run_checkpy,
     parse=lambda args, output: create_checkpy_response(args["repo"], args["args"], output),
+    placeholders={"args": "checkpy args"},
 )
 
 TOOLS = {tool.name: tool for tool in (CHECK50, CHECKPY)}

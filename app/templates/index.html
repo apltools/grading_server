@@ -7,28 +7,21 @@
 
   <h3>Send POST request to /&lt;tool&gt;</h3>
 
+  {# One form per tool in tools.py, no editing needed when a tool is added #}
+  {% for tool in tools %}
   <div style="float:left;">
-    <h4>check50</h4>
-    <form id="check50_form" method="post" enctype="multipart/form-data">
+    <h4>{{ tool.name }}</h4>
+    <form id="{{ tool.name }}_form" data-endpoint="/{{ tool.name }}" method="post" enctype="multipart/form-data">
       <input type="file" name="file" required/><br/>
-      <input type="text" name="slug" placeholder="slug" required/><br/>
+      {% for field in tool.fields %}
+      <input type="text" name="{{ field }}" placeholder="{{ tool.placeholders.get(field, field) }}" required/><br/>
+      {% endfor %}
       <input type="text" name="webhook" placeholder="optional webhook"/><br/>
       <input type="password" name="password" placeholder="password" required/><br/>
       <button>Submit</button>
     </form>
   </div>
-
-  <div style="float:left;">
-    <h4>checkpy</h4>
-    <form id="checkpy_form" method="post" enctype="multipart/form-data">
-      <input type="file" name="file" required/><br/>
-      <input type="text" name="repo" placeholder="repo" required/><br/>
-      <input type="text" name="args" placeholder="checkpy args" required/><br/>
-      <input type="text" name="webhook" placeholder="optional webhook"/><br/>
-      <input type="password" name="password" placeholder="password" required/><br/>
-      <button>Submit</button>
-    </form>
-  </div>
+  {% endfor %}
 
   <div style="float:left; clear:left;">
     <h3>Response from POST request to /&lt;tool&gt;</h3>

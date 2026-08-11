@@ -28,6 +28,14 @@ def test_checkpy_takes_a_repo_and_args():
     assert TOOLS["checkpy"].fields == ("repo", "args")
 
 
+def test_a_field_without_a_placeholder_falls_back_to_its_own_name():
+    # what the demo form template does for every field
+    tool = TOOLS["check50"]
+
+    assert tool.placeholders.get("slug", "slug") == "slug"
+    assert TOOLS["checkpy"].placeholders.get("args", "args") == "checkpy args"
+
+
 def test_check50_parses_its_own_output():
     response = TOOLS["check50"].parse({"slug": "some/slug"}, fixture("check50_pass"))
 

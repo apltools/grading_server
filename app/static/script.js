@@ -29,8 +29,10 @@ function post(form, dest) {
 }
 
 document.addEventListener("DOMContentLoaded", function(event) {
-  post($("#check50_form"), "/check50");
-  post($("#checkpy_form"), "/checkpy");
+  // every tool's form is rendered from tools.py, carrying its own endpoint
+  $("form[data-endpoint]").each(function() {
+    post($(this), $(this).data("endpoint"));
+  });
 
   window.setInterval(function() {
     if (id !== "") {

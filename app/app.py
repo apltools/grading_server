@@ -79,7 +79,7 @@ def invalid_request(error):
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return render_template("index.html", tools=tools.TOOLS.values())
 
 
 def grade(tool):
