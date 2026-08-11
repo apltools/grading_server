@@ -1,53 +1,144 @@
-A simple check50 and checkpy grading server built using Flask.
+# grading_server
 
-Submissions are graded in a throwaway container built from [check/Dockerfile](check/Dockerfile), which runs Python 3.14 installed through uv.
+A grading server for student programming submissions, built with Flask. You POST a zipfile, it runs [check50](https://cs50.readthedocs.io/projects/check50/en/latest/) or [checkpy](https://github.com/jelleas/checkpy) against it, and you poll for the result as json.
 
-## Build
+Every submission is graded inside a throwaway container, so student code never touches the server itself.
 
-`bash build.sh`
+## How a job flows
 
-## Running the server
+1. You POST a zipfile to `/check50` or `/checkpy`. The server saves it, puts a job on a queue, and immediately hands you a job id.
+2. A worker picks the job up, starts a fresh container from [check/Dockerfile](check/Dockerfile) (Python 3.14, installed with uv, with check50 and checkpy preinstalled), and copies the zipfile in.
+3. check50 or checkpy runs in that container. The container is then stopped and deleted.
+4. The output is parsed into a compact json result, stored under the job id, and optionally POSTed to a webhook you gave.
+5. You GET `/get/<id>` to fetch it.
 
-Create a .env file with:
+Running that requires three pieces, and `podman compose` starts the first two for you:
 
-  UID=<your_user_id> # id -u
+| piece | what it is |
+| --- | --- |
+| `scheduler` | the Flask app plus four queue workers, reachable on port 8080 |
+| `redis` | holds the job queue and the finished results |
+| `grading_server_check` | the image the workers launch per job. Not a running service - it is started and destroyed per submission |
 
-Create a folder `secrets` within that:
+## Prerequisites
 
-* a file `app_password.txt`. In it store your password for running checks.
-* a file `gh_auth.txt`. In it store auth for GitHub in the following format `<gh_username>:<gh_personal_access_token>`. Use a classic token with repo access.
+- **podman** - runs the containers. `brew install podman` on Mac, or your package manager on Linux.
+- **docker-compose** - `podman compose` does not implement compose itself, it shells out to an external provider. Without it every `podman compose` command below fails immediately. `brew install docker-compose` on Mac.
+- **On Mac and Windows**, containers cannot run natively, so podman runs them inside a small Linux VM that you have to start once:
 
-`podman compose up`
+  ```sh
+  podman machine init   # only the very first time
+  podman machine start
+  ```
 
-### Mac / Windows
+- **About 5 GB of disk**, and patience for the first build: the check image carries a full scientific Python stack (numpy, pandas, matplotlib, opencv, jupyter) and takes many minutes to build. That is normal, do not kill it.
+
+## Setup
+
+Both steps are per clone - `secrets/` and `.env` are gitignored, so a fresh clone has neither.
+
+### 1. Create the secrets
+
+```sh
+mkdir -p secrets
+echo 'your-password-here' > secrets/app_password.txt
+touch secrets/gh_auth.txt
+```
+
+- `app_password.txt` - every grading request must send this password. Pick anything.
+- `gh_auth.txt` - GitHub credentials for fetching *private* test repositories, in the format `<gh_username>:<gh_personal_access_token>`, using a classic token with repo access. Leave the file empty if your test repos are public, but do create it: compose refuses to start if either file is missing.
+
+### 2. Create the .env
+
+The server starts the check containers by talking to podman's socket, which compose mounts into it. It needs to know the user id that podman runs as, so it can find that socket:
+
+```sh
+echo "UID=$(id -u)" > .env
+```
+
+**On Mac and Windows**, containers run inside the VM, so the id that matters is the one *inside* it, not your own:
+
+```sh
+echo "UID=$(podman machine ssh id -u)" > .env
+```
+
+### 3. Enable the podman socket
+
+The socket is not on by default. Run this as the same user whose id you just put in `.env`.
+
+On Linux:
+
+```sh
+systemctl --user enable --now podman.socket
+```
+
+On Mac and Windows, run it inside the VM:
 
 ```sh
 podman machine ssh
+systemctl --user enable --now podman.socket
+exit
+```
+
+While in there, you may also need subordinate id ranges, which is what lets a rootless container create users of its own. Check with `cat /etc/subuid` - if the user running podman (`core` in the podman machine, your own user on Linux) already has a line, you are done. The deployment box runs podman as `app_user`, hence:
+
+```sh
 echo 'app_user:100000:65536' >> /etc/subuid
 echo 'app_user:100000:65536' >> /etc/subgid
-systemctl --user enable --now podman.socket
 ```
 
-### Linux
+## Build and run
 
 ```sh
-systemctl --user enable --now podman.socket
+bash build.sh        # builds the app image and the check image
+podman compose up    # starts the server on http://localhost:8080
 ```
 
-## Running the tests
-
-The tests cover the parsing of check50 and checkpy output, and need neither Redis nor podman:
+Everyday commands:
 
 ```sh
-pip install -r requirements-dev.txt
-pytest
+podman compose up -d              # run in the background
+podman compose logs -f scheduler  # follow the server logs
+podman compose down               # stop everything
+bash build.sh && podman compose up -d --force-recreate   # after changing code
 ```
 
-## Check if the server is running
+## Check that it works
 
-Visit http://localhost:8080 for a demo and http://localhost:8080/rq to check on worker status.
+Open <http://localhost:8080>. It serves a small form for both tools, which is the quickest way to confirm the server is alive without touching curl. <http://localhost:8080/rq> shows the queue and its workers.
 
-To see the check containers a job spins up, talk to the same socket the server uses:
+End to end from the command line, using a public CS50 problem:
+
+```sh
+cat > hello.py <<'EOF'
+name = input("What is your name? ")
+print(f"hello, {name}")
+EOF
+zip hello.zip hello.py
+
+curl -F 'file=@hello.zip' \
+     -F slug='cs50/problems/2024/x/sentimental/hello' \
+     -F password="$(cat secrets/app_password.txt)" \
+     localhost:8080/check50
+```
+
+That returns a job id. Grading takes some seconds, so poll until the status is `finished`:
+
+```sh
+curl localhost:8080/get/<id>
+```
+
+You should see `"passed_check_count": 3`. The same submission through checkpy, whose tests live in a GitHub repository rather than in a slug:
+
+```sh
+curl -F 'file=@hello.zip' \
+     -F repo='spcourse/tests' \
+     -F args='hello' \
+     -F password="$(cat secrets/app_password.txt)" \
+     localhost:8080/checkpy
+```
+
+To watch the throwaway containers appear and disappear while a job runs, talk to the same socket the server uses:
 
 ```sh
 podman --url=unix:///run/user/0/podman/podman.sock ps
@@ -151,3 +242,34 @@ If the grading tool produced something unparseable, `result` holds an error inst
   "raw": "<what the tool printed>"
 }
 ```
+
+## Running the tests
+
+The tests cover the parsing of check50 and checkpy output, and need neither Redis nor podman:
+
+```sh
+pip install -r requirements-dev.txt
+pytest
+```
+
+The fixtures under `tests/fixtures/` are real captured output from both tools; [tests/fixtures/README.md](tests/fixtures/README.md) records how to recapture them.
+
+## Troubleshooting
+
+**`executing /opt/homebrew/bin/docker-compose: no such file`, or compose does nothing**
+The compose provider is missing. Install docker-compose (see Prerequisites).
+
+**`secrets/app_password.txt: no such file or directory`**
+Compose will not start without both secret files. See Setup step 1; `gh_auth.txt` may be empty but must exist.
+
+**The scheduler container starts and exits immediately**
+Check `podman compose logs scheduler`. A traceback ending in `FileNotFoundError: '/run/secrets/app_password'` means the secret did not reach the container - recreate it and `podman compose up --force-recreate`.
+
+**Jobs never leave `busy`, or the logs show a podman connection error**
+The server cannot reach the podman socket. Three usual causes: `UID` in `.env` does not match the user running podman (on Mac it must come from `podman machine ssh id -u`, not from your Mac account), the socket was never enabled (Setup step 3), or, on Mac and Windows, the VM is not running - `podman machine start`.
+
+**`incorrect password`**
+The `password` field must match `secrets/app_password.txt` exactly. Note that `echo` adds a trailing newline; the server strips it, so that is fine, but a shell that does not strip it on your side is not.
+
+**The first build seems stuck**
+It is not. The check image is around 4 GB and installs a full scientific Python stack. `podman images` in another terminal shows progress.
