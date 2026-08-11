@@ -6,13 +6,8 @@ import docker
 import requests
 import rq
 
-from response import create_checkpy_response, create_check50_response
+from tools import TOOLS
 
-if os.path.exists("/run/secrets/gh_auth"): 
-    with open("/run/secrets/gh_auth") as f:
-        GH_AUTH = f.read().strip()
-else:
-    GH_AUTH = None
 
 class JobError(Exception):
     pass
@@ -45,28 +40,17 @@ def trigger(webhook, result):
             raise JobError(f"Could not trigger webhook: {webhook}, connection refused")
 
 
-def checkpy(repo, args, filepath, webhook):
-    gh_auth = f"--gh-auth {GH_AUTH}" if GH_AUTH else ""
+def run(tool_name, args, filepath, webhook):
+    """Grade the submission in filepath with a tool, by name. Returns its result.
+
+    This is what the rq workers run, so both arguments are plain data: a Tool
+    itself holds functions and cannot survive being queued.
+    """
+    tool = TOOLS[tool_name]
+
     with job(filepath) as container:
-        container.exec_run(f"python3 -m checkpy {gh_auth} -d {repo}")
-        output = container.exec_run(f"python3 -m checkpy {gh_auth} --json {args}").output.decode('utf8')
-
-        # rm any output until the first open square bracket
-        # to prevent any python warnings from breaking json.parse
-        for i, line in enumerate(output.split("\n")):
-            if line.strip().startswith("["):
-                output = "\n".join(output.split("\n")[i:])
-                break
-
-        result = create_checkpy_response(repo, args, output).to_json()
-        trigger(webhook, result)
-    return result
-
-
-def check50(slug, filepath, webhook):
-    with job(filepath) as container:
-        output = container.exec_run(f"check50 --local -o json -- {slug}").output.decode('utf8')
-        result = create_check50_response(slug, output).to_json()
+        output = tool.run(container, args)
+        result = tool.parse(args, output).to_json()
         trigger(webhook, result)
     return result
 

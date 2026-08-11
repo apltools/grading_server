@@ -243,6 +243,100 @@ If the grading tool produced something unparseable, `result` holds an error inst
 }
 ```
 
+## Adding another grading tool
+
+Say you want to grade with a tool called `mytool`. Each tool is one entry in [app/tools.py](app/tools.py) plus a parser in [app/response.py](app/response.py); its endpoint, queueing, container, and result storage all come for free.
+
+### 1. Install it in the check image
+
+Add it to the `uv pip install` block in [check/Dockerfile](check/Dockerfile), then `bash build.sh`. Installs happen as the `ubuntu` user into the `/opt/venv` virtualenv, which is also what `python3` and `pip` in that image point at.
+
+Your tool must **print json on stdout**. Everything the command writes is captured together, stdout and stderr merged, and handed to your parser — so a stray warning from the interpreter ends up in the text being parsed. That is why the check image compiles bytecode at build time, and why checkpy's output is trimmed up to its first `[`.
+
+### 2. Write a parser
+
+In [app/response.py](app/response.py), next to `create_check50_response` and `create_checkpy_response`:
+
+```python
+def create_mytool_response(target: str, output: str) -> Response | ErrorResponse:
+    try:
+        json_output = json.loads(output)
+    except json.JSONDecodeError:
+        return ErrorResponse(
+            tool="mytool",
+            args={"target": target},
+            message=f"Invalid JSON output from mytool:\n{output}",
+            raw=output
+        )
+
+    results = [
+        Result(
+            passed=check["ok"],
+            description=f"{':)' if check['ok'] else ':('} {check['title']}",
+            message=check.get("hint", ""),
+            log=check.get("stdout", "")
+        )
+        for check in json_output["checks"]
+    ]
+
+    return Response(
+        runs=[Run(name=target, results=results)],
+        n_tests=len(results),
+        n_passed=sum(1 for r in results if r.passed),
+        tool="mytool",
+        args={"target": target},
+        raw=output
+    )
+```
+
+Two conventions worth keeping: return an `ErrorResponse` rather than raising whenever the output is not what you expect, and prefix descriptions with `:)`, `:(` or `:|` for passed, failed and undecided, so every tool renders the same way for clients.
+
+### 3. Register the tool
+
+In [app/tools.py](app/tools.py):
+
+```python
+def run_mytool(container, args):
+    return container.exec_run(f"mytool --json {args['target']}").output.decode('utf8')
+
+
+MYTOOL = Tool(
+    name="mytool",                 # serves POST /mytool
+    fields=("target",),            # required form fields, in validation order
+    run=run_mytool,
+    parse=lambda args, output: create_mytool_response(args["target"], output),
+)
+
+TOOLS = {tool.name: tool for tool in (CHECK50, CHECKPY, MYTOOL)}
+```
+
+That is the whole wiring: the endpoint, the password check, the `file` upload, the optional `webhook`, the queueing and the `/get/<id>` plumbing are shared.
+
+Things to know about `run`:
+
+- It executes in `/home/ubuntu/workspace` as the `ubuntu` user, with the submission already unzipped there.
+- Command strings are split like shell words but **not** interpreted by a shell, so `;`, `|` and `>` in a form value are inert. They do still arrive as arguments, so validate them yourself if your tool has flags you would not want a caller to set.
+- Run as many commands as you need — checkpy fetches its tests with one and grades with the next.
+- A job is killed after 600 seconds, and the container is destroyed either way.
+
+### 4. Rebuild and try it
+
+```sh
+bash build.sh
+podman compose up -d --force-recreate
+
+curl -F 'file=@hello.zip' \
+     -F target='hello.py' \
+     -F password="$(cat secrets/app_password.txt)" \
+     localhost:8080/mytool
+```
+
+Jobs are queued by tool name, so let the queue drain before deploying a change that renames or removes a tool — an in-flight job naming a tool that no longer exists will fail.
+
+### 5. Optionally, add it to the demo page
+
+[app/templates/index.html](app/templates/index.html) holds one form per tool, wired up in [app/static/script.js](app/static/script.js) with `post($("#mytool_form"), "/mytool")`.
+
 ## Running the tests
 
 The tests cover the parsing of check50 and checkpy output, and need neither Redis nor podman:

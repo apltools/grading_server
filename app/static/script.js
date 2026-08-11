@@ -30,7 +30,6 @@ function post(form, dest) {
 
 document.addEventListener("DOMContentLoaded", function(event) {
   post($("#check50_form"), "/check50");
-  post($("#check50v2_form"), "/check50v2");
   post($("#checkpy_form"), "/checkpy");
 
   window.setInterval(function() {

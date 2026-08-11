@@ -5,6 +5,7 @@ import uuid
 import pathlib
 
 import schedule
+import tools
 
 import rq_dashboard
 from flask import Flask, jsonify, request, render_template
@@ -81,30 +82,24 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/checkpy", methods=["POST"])
-@requires_password
-def checkpy():
-    repo = form_field("repo")
-    args = form_field("args")
-    filepath = save_upload()
-    webhook = request.form.get("webhook") or None
+def grade(tool):
+    """The POST endpoint of a single grading tool."""
+    @requires_password
+    def view():
+        args = {name: form_field(name) for name in tool.fields}
+        filepath = save_upload()
+        webhook = request.form.get("webhook") or None
 
-    job_id = scheduler.start_checkpy(repo, args, filepath, webhook)
+        job_id = scheduler.start(tool.name, args, filepath, webhook)
 
-    return json_response(id=job_id, message="use /get/<id> to get results")
+        return json_response(id=job_id, message="use /get/<id> to get results")
+    return view
 
 
-@app.route("/check50", methods=["POST"])
-@app.route("/check50v3", methods=["POST"])
-@requires_password
-def check50():
-    slug = form_field("slug")
-    filepath = save_upload()
-    webhook = request.form.get("webhook") or None
-
-    job_id = scheduler.start_check50(slug, filepath, webhook)
-
-    return json_response(id=job_id, message="use /get/<id> to get results")
+# One POST endpoint per grading tool, see tools.py
+for tool in tools.TOOLS.values():
+    for route in (tool.name, *tool.aliases):
+        app.add_url_rule(f"/{route}", f"grade_{route}", grade(tool), methods=["POST"])
 
 
 @app.route('/get/<id>', methods=["GET"])

@@ -20,13 +20,9 @@ class Scheduler:
         self.queue = rq.Queue(self.queue_name, connection=self.cache)
         self.finished_registry = rq.registry.FinishedJobRegistry("default", queue=self.queue)
 
-    def start_check50(self, slug, filepath, webhook):
-        """Starts a check50 job. Returns job_id."""
-        return self.queue.enqueue(work.check50, slug, filepath, webhook, job_timeout=600).id
-
-    def start_checkpy(self, repo, args, filepath, webhook):
-        """Starts a checkpy job. Returns job_id."""
-        return self.queue.enqueue(work.checkpy, repo, args, filepath, webhook, job_timeout=600).id
+    def start(self, tool_name, args, filepath, webhook):
+        """Starts a grading job for the tool called tool_name. Returns job_id."""
+        return self.queue.enqueue(work.run, tool_name, args, filepath, webhook, job_timeout=600).id
 
     def get(self, id):
         """Get job result. Returns Status and result as parsed json or None."""
