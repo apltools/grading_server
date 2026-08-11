@@ -91,7 +91,7 @@ USER root
 
 WORKDIR /distro
 
-COPY ./requirements.txt /distro
+COPY --chown=ubuntu:ubuntu ./requirements.txt /distro
 
 # Install any needed packages specified in requirements.txt
 USER ubuntu
