@@ -12,7 +12,7 @@ import os
 from dataclasses import dataclass, field
 from typing import Callable
 
-from response import Response, ErrorResponse, create_check50_response, create_checkpy_response
+from response import Response, ErrorResponse, create_check50_response, create_checkpy_response, create_checknb_response
 
 if os.path.exists("/run/secrets/gh_auth"):
     with open("/run/secrets/gh_auth") as f:
@@ -62,6 +62,12 @@ def run_checkpy(container, args):
 
     return output
 
+def run_checknb(container, args):
+    filename = container.exec_run("ls /home/ubuntu/workspace").output.decode('utf8').strip()
+    container.exec_run("uv tool install 'checknb[dp] @ git+https://github.com/spcourse/checknb.git'")
+    output = container.exec_run(f"/home/ubuntu/.local/bin/checknb --cell-timeout 60 {filename} --json").output.decode('utf8')
+    return output
+
 
 CHECK50 = Tool(
     name="check50",
@@ -79,4 +85,12 @@ CHECKPY = Tool(
     placeholders={"args": "checkpy args"},
 )
 
-TOOLS = {tool.name: tool for tool in (CHECK50, CHECKPY)}
+CHECKNB = Tool(
+    name="checknb",
+    fields=(),
+    run=run_checknb,
+    parse=lambda args, output: create_checknb_response(output),
+)
+
+
+TOOLS = {tool.name: tool for tool in (CHECK50, CHECKPY, CHECKNB)}

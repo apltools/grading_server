@@ -71,7 +71,10 @@ class Response:
         return obj
 
     def __post_init__(self):
-        parsed_json = json.loads(self.raw)
+        try:
+            parsed_json = json.loads(self.raw)
+        except json.JSONDecodeError:
+            parsed_json = self.raw
         self.raw = str(Response._remove_long_strings(parsed_json, self.MAX_FIELD_LENGTH))
 
     def to_json(self):
@@ -205,6 +208,41 @@ def create_checkpy_response(repo: str, args: str, output: str) -> Response | Err
         raw=output
     )
 
+def create_checknb_response(output: str) -> Response | ErrorResponse:
+    try:
+        json_output = json.loads(output)
+    except json.JSONDecodeError:
+        return ErrorResponse(
+            tool="checknb",
+            args={},
+            message=f"Invalid JSON output from checknb:\n{output}",
+            raw=output
+        )
+
+    n_tests = 0
+    for run in json_output:
+        n_tests += run["nTests"]
+
+    n_passed = 0
+    for run in json_output:
+        n_passed += run["nPassed"]
+
+    runs: list[Run] = []
+    for run in json_output:
+        runs.append(Run(
+            name=run["name"],
+            results=get_checknb_results(run)
+        ))
+
+    return Response(
+        runs=runs,
+        n_tests=n_tests,
+        n_passed=n_passed,
+        tool="checknb",
+        args={},
+        raw=output
+    )
+
 def get_check50_results(check: dict) -> list[Result]:
     check50_results: list[Result] = []
     for result in check["results"]:
@@ -267,3 +305,41 @@ def get_checkpy_results(check: dict) -> list[Result]:
         ))
     
     return checkpy_results
+
+def get_checknb_results(check: dict) -> list[Result]:
+    if check["nTests"] == 0:
+        return [Result(
+            passed=None,
+            description=re.sub(r'\x1B\[[0-?]*[ -/]*[@-~]', '', check["output"][0]),
+            message="",
+            log=""
+        )]
+
+    checknb_results: list[Result] = []
+    for result in check["results"]:
+        # checknb reports tests it could not judge automatically as "manual"
+        passed = result["passed"]
+        if result["status"] == "manual":
+            passed = None
+
+        smiley = ":)"
+        if passed is False:
+            smiley = ":("
+        elif passed is None:
+            smiley = ":|"
+
+        points = f"{result['points']:g}/{result['maxPoints']:g}"
+        descr = f"{smiley} {result['description']} {points}"
+
+        message = result["message"]
+        if result["exception"] is not None:
+            message = f"{result['exception']}: {message}" if message else result["exception"]
+
+        checknb_results.append(Result(
+            passed=passed,
+            description=descr,
+            message=message,
+            log=result["output"]
+        ))
+
+    return checknb_results
