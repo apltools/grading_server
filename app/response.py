@@ -233,11 +233,11 @@ def create_checknb_response(output: str) -> Response | ErrorResponse:
 
     n_tests = 0
     for run in json_output:
-        n_tests += run["nTests"]
+        n_tests += run["maxPoints"]
 
     n_passed = 0
     for run in json_output:
-        n_passed += run["nPassed"]
+        n_passed += run["nPoints"]
 
     runs: list[Run] = []
     for run in json_output:
