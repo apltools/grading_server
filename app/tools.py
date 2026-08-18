@@ -12,7 +12,7 @@ import os
 from dataclasses import dataclass, field
 from typing import Callable
 
-from response import Response, ErrorResponse, create_check50_response, create_checkpy_response, create_checknb_response
+from response import CHECKNB_NO_NOTEBOOK, Response, ErrorResponse, create_check50_response, create_checkpy_response, create_checknb_response
 
 if os.path.exists("/run/secrets/gh_auth"):
     with open("/run/secrets/gh_auth") as f:
@@ -63,7 +63,12 @@ def run_checkpy(container, args):
     return output
 
 def run_checknb(container, args):
-    filename = container.exec_run("ls /home/ubuntu/workspace").output.decode('utf8').strip()
+    listing = container.exec_run("ls /home/ubuntu/workspace").output.decode('utf8')
+    filename = next((f for f in sorted(listing.split()) if f.endswith(".ipynb")), "")
+
+    if not filename:
+        return CHECKNB_NO_NOTEBOOK
+
     container.exec_run("uv tool install 'checknb[dp] @ git+https://github.com/spcourse/checknb.git'")
     output = container.exec_run(f"/home/ubuntu/.local/bin/checknb --cell-timeout 60 {filename} --json").output.decode('utf8')
     return output

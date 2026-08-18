@@ -208,7 +208,19 @@ def create_checkpy_response(repo: str, args: str, output: str) -> Response | Err
         raw=output
     )
 
+# run_checknb reports back with this when the submission holds no notebook,
+# in which case there is no checknb output to parse at all
+CHECKNB_NO_NOTEBOOK = "checknb: no .ipynb file in the submission"
+
 def create_checknb_response(output: str) -> Response | ErrorResponse:
+    if output == CHECKNB_NO_NOTEBOOK:
+        return ErrorResponse(
+            tool="checknb",
+            args={},
+            message="checknb failed: the submission contains no .ipynb file",
+            raw=output
+        )
+
     try:
         json_output = json.loads(output)
     except json.JSONDecodeError:
