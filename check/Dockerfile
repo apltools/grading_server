@@ -83,6 +83,13 @@ RUN printf '%s\n' \
 
 RUN sed -i '/^ubuntu ALL=(ALL) NOPASSWD:ALL$/d' /etc/sudoers
 
+# GitHub intermittently answers this container's HTTP/2 POSTs to
+# git-upload-pack with a 401. git then prompts for a username that nobody is
+# here to type, so check50 --local hangs and then reports the slug as invalid.
+# Measured in this image: HTTP/2 fetches fail ~75% of the time, HTTP/1.1 never
+# does. git's wire protocol version makes no difference either way.
+RUN git config --system http.version HTTP/1.1
+
 ENV CHECK50_PATH="~/.local/share/check50"
 
 #############################################################################
